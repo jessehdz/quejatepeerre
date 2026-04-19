@@ -3,13 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@maptiler/geocoding-control": "^3.0.0",
+    "@maptiler/sdk": "^4.0.1",
+    "@supabase/supabase-js": "^2.103.3",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
+    "maplibre-gl": "^5.23.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-icons": "^5.6.0",
+    "react-map-gl": "^8.1.1",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
