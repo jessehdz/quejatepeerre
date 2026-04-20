@@ -1,13 +1,50 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+:root {
+  /* backgrounds - dark, not black */
+  --bg: #16181D; /* main page background */
+  --bg2: #1E2028; /* header and feed panel */
+  --tile: #252830; /* cards and content tiles */
+  --tile2: #2C3040; /* hover state for tiles */
+
+  /* Puerto Rico colors */
+  --sky: #7B9EC7; /* celestial blue - accents */
+  --sky-dk: #4A6E9C; /* logo, buttons */
+  --sky-lt: #A8C4E0; /* text on dark blue backgrounds */
+  --red: #CE1126; /* CTAs only (report button, FAB) */
+  --red-dk: #A00D1E; /* hover state for red buttons */
+
+  /* text */
+  --cream: #F0ECE4; /* primary text */
+  --mu: #4A6070; /* muted text - labels, secondary info */
+  --mu2: #6A8899; /* slightly brighter muted text */
+
+  /* borders */
+  --border: rgba(255, 255, 255, .06); /* subtle border - barely visible */
+  --border2: rgba(255, 255, 255, .1); /* slightly more visible */
+
+  /* border radius */
+  --r: 8px; /* standard - cards, buttons */
+  --r-pill: 100px; /* fully rounded - badges, chips */
+
+}
+
+/* Base body styles */
+body {
+  font-family: 'DM Mono', monospace;
+  background: var(--bg);
+  color: var(--cream);
+  min-height: 100vh;
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .08);
+  border-radius: 2px; 
 }
