@@ -15,9 +15,9 @@ export const CATEGORIES = [
 
 // Category colors - used for map pins, card borders, and badges
 export const CATEGORY_COLORS = {
-    pothole: '#ef4444',
-    power: '#f59e0b',
-    water: '#7b9ec7',
-    road: '#9b5cf6',
-    light: '#5dc8a0',
+    pothole: '#EF4444',
+    power: '#F59E0B',
+    water: '#7B9EC7',
+    road: '#9B5CF6',
+    light: '#5DC8A0',
 };
