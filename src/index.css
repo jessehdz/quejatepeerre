@@ -6,22 +6,20 @@
 
 :root {
   /* backgrounds - dark, not black */
-  --bg: #16181D; /* main page background */
-  --bg2: #1E2028; /* header and feed panel */
-  --tile: #252830; /* cards and content tiles */
-  --tile2: #2C3040; /* hover state for tiles */
+  --bg: #1E2A2C; /* main page background */
+  --bg2: #243234; /* header and feed panel */
+  --tile: #2E3E40; /* cards and content tiles */
+  --tile2: #3A5054; /* hover state for tiles */
 
   /* Puerto Rico colors */
-  --sky: #7B9EC7; /* celestial blue - accents */
-  --sky-dk: #4A6E9C; /* logo, buttons */
-  --sky-lt: #A8C4E0; /* text on dark blue backgrounds */
+  --cel: #7BAFD4; /* celestial blue - accents */
   --red: #CE1126; /* CTAs only (report button, FAB) */
   --red-dk: #A00D1E; /* hover state for red buttons */
 
   /* text */
   --cream: #F0ECE4; /* primary text */
-  --mu: #4A6070; /* muted text - labels, secondary info */
-  --mu2: #6A8899; /* slightly brighter muted text */
+  --muted: #6A8A8E; /* muted text - labels, secondary info */
+  --muted2: #8AACB0; /* slightly brighter muted text */
 
   /* borders */
   --border: rgba(255, 255, 255, .06); /* subtle border - barely visible */
