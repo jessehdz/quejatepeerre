@@ -16,8 +16,16 @@ export const CATEGORIES = [
 // Category colors - used for map pins, card borders, and badges
 export const CATEGORY_COLORS = {
     pothole: '#EF4444',
-    power: '#F59E0B',
-    water: '#7B9EC7',
+    power: '#FF6B35',
+    water: '#7bafd4',
     road: '#9B5CF6',
-    light: '#5DC8A0',
+    light: '#00d4a8',
 };
+
+// Severity colors - used for severity badges and indicators
+export const SEVERITY_COLORS = {
+    crisis: '#C8402A',
+    verg: '#C07818',
+    ignor: '#7A6A28',
+    nuevo: '#2A8A8A',
+}
