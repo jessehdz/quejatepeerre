@@ -29,6 +29,19 @@
   --r: 8px; /* standard - cards, buttons */
   --r-pill: 100px; /* fully rounded - badges, chips */
 
+  /* category colors */
+  --pothole: #EF4444;
+  --power: #FF6B35;
+  --water: #7bafd4;
+  --road: #9B5CF6;
+  --light: #00d4a8;
+
+  /* severity colors */
+  --crisis: #C8402A;
+  --verg: #C07818;
+  --ignor: #7A6A28;
+  --nuevo: #2A8A8A;
+
 }
 
 /* Base body styles */
