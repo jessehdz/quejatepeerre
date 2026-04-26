@@ -1,0 +1,63 @@
+.header {
+    padding: 14px 22px 18px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+}
+
+@media (min-width: 1024px) {
+    .header {
+        padding: 16px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+    }
+
+    /* collapse the stacked logo block into one horizontal row */
+    .header-top {
+        margin-bottom: 0;
+    }
+}
+
+.header-top {
+    display: flex;
+    /* flex-direction: column; */
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+    gap: 2px;
+}
+
+.logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+
+/* dual colored logo */
+.logo-red {
+    color: var(--red);
+}
+
+.logo-cel-blue {
+    color: var(--cel);
+}
+
+.logo-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .16em; 
+}
+
+.beta-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    letter-spacing: .1em;
+    color: var(--cel);
+    background-color: rgba(123, 175, 212, .15);
+    padding: 2px 6px;
+    border-radius: 4px;
+}

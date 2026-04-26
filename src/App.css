@@ -1,0 +1,48 @@
+/* app shell */
+.app {
+    width: 100%;
+    min-height: 100vh;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 86px; /* bottom-nav clearance on mobile */
+}
+
+/* tablet (≥640px) */
+@media (min-width: 640px) {
+    .content {
+        padding-bottom: 96px;
+    }
+}
+
+/* desktop (≥1024px) */
+@media (min-width: 1024px) {
+    .app {
+        max-width: 1280px;
+        margin: 0 auto;
+    }
+
+    .content {
+        padding-bottom: 0; /* bottom nav becomes a sidebar or top nav */
+        display: grid;
+        grid-template-columns: 1fr 420px; /* map | feed panel */
+        gap: 0;
+        overflow: hidden;
+    }
+}
+
+/* wide desktop (≥1440px) */
+@media (min-width: 1440px) {
+    .app {
+        max-width: 1440px;
+    }
+
+    .content {
+        grid-template-columns: 1fr 480px;
+    }
+}
