@@ -1,0 +1,65 @@
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    /* width: 100%; */
+    max-width: 480px;
+    background: var(--bg);
+    border-top: 1px solid var(--bg2);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 10px 22px; /* extra bottom padding for better touch targets */
+    z-index: 1000; 
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: var(--muted);
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: .08em;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    min-width: 60px;
+    min-height: 60px;
+    justify-content: center;
+}
+
+/* active tab highlight - celestial blue */
+.nav-item.active {
+    color: var(--cel);
+}
+
+.nav-icon {
+    font-size: 24px;
+    line-height: 1.2;
+}
+
+.nav-label {
+    font-size: 10px;
+}
+
+/* red FAB */
+.nav-fab {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--red);
+    color: var(--cream);
+    font-size: 24px;
+    font-weight: 700;
+    border: 3px solid var(--bg);
+    margin-top: -20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+}

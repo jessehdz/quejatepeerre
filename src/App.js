@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Header from "./components/Header";
+import BottomNav from "./components/BottomNav";
 import './App.css';
 
 function App() {
@@ -12,6 +13,9 @@ function App() {
       <div className="content">
         <p style={{color: 'var(--muted)', padding: 16, fontFamily: 'DM Mono, monospace', fontSize: 11}}>Component Placeholder -- active tab: {activeTab}</p>
       </div>
+
+      {/* nav updates state and button highlight when clicked */}
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 }
