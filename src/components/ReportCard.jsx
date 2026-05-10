@@ -1,6 +1,5 @@
 import { useState } from "react";
-// import { CATEGORY_COLORS, SEVERITY_COLORS } from "../lib/constants";
-// import { FaBolt, FaDroplet, FaRoad, FaLightbulb } from 'react-icons/fa6';
+import { CATEGORIES } from "../lib/constants";
 import { MdConstruction } from 'react-icons/md';
 import { ChevronUp } from 'lucide-react';
 import './ReportCard.css';
@@ -14,6 +13,7 @@ import './ReportCard.css';
   - A severity pill in the top-right corner (how neglected is it)
   - The title and municipality in the card body
   - An upvote button that increments once per session
+  
   PROPS:
     category — 'hoyo' | 'apagon' | 'agua' | 'carret' | 'alumb'
     icon — emoji: 'MdConstruction' 'FaBolt' 'FaDroplet' 'FaRoad' 'FaLightbulb'
@@ -29,7 +29,7 @@ import './ReportCard.css';
 function ReportCard({
     category = 'hoyo',
     icon = MdConstruction,
-    label = 'Hoyo',
+    label = 'hoyo',
     severity = 'CRISIS',
     title = 'Título del reporte va aquí',
     municipality = 'Municipio',
@@ -51,13 +51,17 @@ function ReportCard({
     }
 
     const severityClass = severity.toLowerCase().replace('ü', 'u'); // convert "VERGÜENZA" to "vergüenza" for CSS class
-    const Icon = icon;
+    
+    // find the icon component for the category
+    const categoryData = CATEGORIES.find(cat => cat.key === category) || {};
+    const Icon = categoryData.icon || MdConstruction; // default icon if category not found
+
 
     return (
         <div className="report-card" onClick={onClick}>
             {/* category tile */}
             <div className={`card-tile cat-${category}`}>
-                <span className="tile-icon"><Icon /></span>
+                <span className="tile-icon"><Icon size={20}/></span>
                 <span className="tile-label">{label}</span>
 
                 {/* severity badge */}

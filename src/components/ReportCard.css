@@ -36,26 +36,26 @@
 }
 
 /* category background colors */
-.cat-hoyo {
+.cat-pothole {
     background: var(--pothole);
 }
-.cat-apagon {
+.cat-power {
     background: var(--power);
 }
-.cat-agua {
+.cat-water {
     background: var(--water);
 }
-.cat-carretera {
+.cat-road {
     background: var(--road);
 }
-.cat-alumbrado {
+.cat-light {
     background: var(--light);
 }
 
 /* severity levels - pill */
 .sev-pill {
     position: absolute;
-    top: 7px;
+    /* top: 7px; */
     right: 10px;
     font-family: 'DM Mono', monospace;
     font-size: 9px;
