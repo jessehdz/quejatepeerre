@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Header from "./components/Header";
 import ReportCard from "./components/ReportCard";
-import { TrafficCone } from "lucide-react";
+import { Icon, TrafficCone } from "lucide-react";
 import BottomNav from "./components/BottomNav";
 import './App.css';
 
@@ -15,16 +15,18 @@ function App() {
       {/* content placeholder */}
       <div className="content">
         <p style={{ color: 'var(--muted)', padding: 16, fontFamily: 'DM Mono, monospace', fontSize: 11 }}>Component Placeholder -- active tab: {activeTab}</p>
+        
         <ReportCard
-        category="hoyo"
-        icon={TrafficCone}
+        category="pothole"
+        icon=<Icon />
         label="Hoyo"
         severity="CRISIS"
         title="Calle 123 con bache enorme, lleva meses así y nadie hace nada"
         municipality="San Juan"
         daysOpen={120}
         voteCount={34}
-      />
+        />
+        
       </div>
       
       {/* nav updates state and button highlight when clicked */}

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { CATEGORIES } from "../lib/constants";
-import { MdConstruction } from 'react-icons/md';
-import { ChevronUp } from 'lucide-react';
+import { ChevronUp, TrafficCone } from 'lucide-react';
 import './ReportCard.css';
 
 /*
@@ -28,7 +27,7 @@ import './ReportCard.css';
 
 function ReportCard({
     category = 'hoyo',
-    icon = MdConstruction,
+    icon = 'TrafficCone',
     label = 'hoyo',
     severity = 'CRISIS',
     title = 'Título del reporte va aquí',
@@ -52,9 +51,9 @@ function ReportCard({
 
     const severityClass = severity.toLowerCase().replace('ü', 'u'); // convert "VERGÜENZA" to "vergüenza" for CSS class
     
-    // find the icon component for the category
+    // find the icon for the category called
     const categoryData = CATEGORIES.find(cat => cat.key === category) || {};
-    const Icon = categoryData.icon || MdConstruction; // default icon if category not found
+    const Icon = categoryData.icon || TrafficCone; // default icon if category not found
 
 
     return (
