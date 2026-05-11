@@ -26,7 +26,7 @@ import './ReportCard.css';
 */
 
 function ReportCard({
-    category = 'hoyo',
+    category = 'power',
     icon = 'TrafficCone',
     label = 'hoyo',
     severity = 'CRISIS',
@@ -51,17 +51,19 @@ function ReportCard({
 
     const severityClass = severity.toLowerCase().replace('ü', 'u'); // convert "VERGÜENZA" to "vergüenza" for CSS class
     
-    // find the icon for the category called
     const categoryData = CATEGORIES.find(cat => cat.key === category) || {};
     const Icon = categoryData.icon || TrafficCone; // default icon if category not found
+    const catColor = categoryData.color || '#999'; // default color if category not found
+    const catLabel = categoryData.label || label; // use category label from constants or fallback to prop
 
 
     return (
         <div className="report-card" onClick={onClick}>
             {/* category tile */}
-            <div className={`card-tile cat-${category}`}>
-                <span className="tile-icon"><Icon size={20}/></span>
-                <span className="tile-label">{label}</span>
+            <div className={`card-tile`} style={{ backgroundColor: catColor }}>
+
+                <span className="tile-icon"><Icon size={18}/></span>
+                <span className="tile-label">{catLabel}</span>
 
                 {/* severity badge */}
                 <span className={`sev-pill sev-${severityClass}`}>
