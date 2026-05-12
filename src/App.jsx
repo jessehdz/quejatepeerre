@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Header from "./components/Header";
-import MapPlaceholder from "./components/MapPlaceholder";
+import MapView from "./components/MapView";
 // import ReportCard from "./components/ReportCard";
 // import { Icon, TrafficCone } from "lucide-react";
 import FeedScreen from "./components/FeedScreen";
@@ -11,11 +11,17 @@ import './App.css';
 function App() {
   const [activeTab, setActiveTab] = useState('mapa');
 
+  // pin location state
+  const [pinnedLocation, setPinnedLocation] = useState(null);
+
   return (
     <div className="app">
       <Header />
 
-      <MapPlaceholder />
+      <MapView 
+        onPinDrop={(lng, lat) => setPinnedLocation({ lng, lat })}
+        pinnedLocation={pinnedLocation}
+      />
 
       {/* content placeholder */}
       <div className="content">
