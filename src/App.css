@@ -13,6 +13,40 @@
     padding-bottom: 86px; /* bottom-nav clearance on mobile */
 }
 
+/* municipality pin styling - below map after pin drop */
+.muni-pin{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 4px 22px 22px;
+    background: var(--bg);
+    border: 1px solid var(--cel);
+    border-radius: 100px;
+    padding: 6px 12px 6px 22px;
+}
+
+.muni-pin-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--cel);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.remove-pin-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0 0 0 8px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+}
+
+
 /* tablet (≥640px) */
 @media (min-width: 640px) {
     .content {
