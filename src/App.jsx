@@ -8,6 +8,34 @@ import BottomNav from "./components/BottomNav";
 import './App.css';
 
 
+// sample coordinates for testing report markers
+const SAMPLE_REPORTS = [
+  {
+    id: 1,
+    category: 'pothole',
+    location: { lat: 18.4655, lng: -66.0701 },
+    title: 'Hoyo gigante en la calle principal',
+    municipality: 'San Juan',
+    daysOpen: 5,
+  },
+  {
+    id: 2,
+    category: 'power',
+    location: { lat: 18.2208, lng: -66.5901 },
+    title: 'Apagón desde hace 3 días',
+    municipality: 'Ponce',
+    daysOpen: 3,
+  },
+  {
+    id: 3,
+    category: 'water',
+    location: { lat: 18.0000, lng: -66.5000 },
+    title: 'Fuga de agua afecta varias casas',
+    municipality: 'Mayagüez',
+    daysOpen: 7,
+  },
+];
+
 function App() {
   const [activeTab, setActiveTab] = useState('mapa');
 
@@ -46,6 +74,7 @@ function App() {
       <MapView 
         onPinDrop={handlePinDrop}
         pinnedLocation={pinnedLocation}
+        reports={SAMPLE_REPORTS} // pass sample reports to MapView for testing
       />
 
       {/* municipality name when pin is dropped */}
