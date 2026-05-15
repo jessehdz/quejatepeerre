@@ -7,8 +7,8 @@ export async function getMunicipality(lat, lng) {
     const response = await fetch(url);
     const data = await response.json();
 
-    // find the first feature with an id that starts with 'place' (which represents a municipality) and return its text (name)
-    const place = data.features.find(feature => feature.id.startsWith('place'));
+    // find the first feature with an id that starts with 'county' - this should correspond to the municipality level in Puerto Rico
+    const place = data.features.find(feature => feature.id.startsWith('county'));
     
     // return the municipality name if found, otherwise return 'Puerto Rico' as a default fallback
     return place?.text || 'Puerto Rico';
