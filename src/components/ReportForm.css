@@ -1,0 +1,97 @@
+.form-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 200;
+}
+
+.form-panel {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 520px;
+    background: var(--bg);
+    border-radius: 24px 24px 0 0;
+    border-top: 3px solid var(--bg2);
+    padding: 0 20px 40px;
+    z-index: 201;
+    height: 450px;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.form-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--muted);
+    border-radius: 2px;
+    margin: 12px auto 8px;
+}
+
+.form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0 18px;
+    font-family: 'Syne', sans-serif;
+}
+
+.form-title {
+    font-family: 'Syne Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--cream);
+    letter-spacing: -.02;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 18px;
+    cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-field {
+    margin-bottom: 18px;
+}
+
+.form-label {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: .14em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.formMunicipality {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--cel);
+    padding: 8px 12px;
+    background: rgba(123,175,212,0.08);
+    border: 1px solid rgba(123,175,212,0.2);
+    border-radius: 10px;    
+}
+
+/* Read-only municipality display — styled like an input but not editable */
+.form-static {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--cel);
+    padding: 8px 12px;
+    background: rgba(123,175,212,0.08);
+    border: 1px solid rgba(123,175,212,0.2);
+    border-radius: 10px;
+}

@@ -4,6 +4,7 @@ import MapView from "./components/MapView";
 import FeedScreen from "./components/FeedScreen";
 import { getMunicipality } from "./lib/geocode";
 import { IoCloseCircle } from "react-icons/io5";
+import ReportForm from "./components/ReportForm";
 import BottomNav from "./components/BottomNav";
 import './App.css';
 
@@ -45,6 +46,9 @@ function App() {
   // municipality state - will be set after reverse geocoding the pinned location
   const [municipality, setMunicipality] = useState(null);
   const [loadingMunicipality, setLoadingMunicipality] = useState(false);
+
+  // state for report form visibility - toggled when form is opened/closed
+  const [formOpen, setFormOpen] = useState(false);
 
   // handle pin drop event from MapView
   async function handlePinDrop(lng, lat) {
@@ -128,7 +132,28 @@ function App() {
       </div>
       
       {/* nav updates state and button highlight when clicked */}
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNav
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          if (tab === 'report') {
+            setFormOpen(true); // open the report form when FAB/Report button is clicked
+          } else {
+            setActiveTab(tab); // switch tabs for other buttons
+          }
+        }} />
+      
+      {/* report form - opens when FAB is clicked, receives location and municipality as props */}
+      <ReportForm 
+        isOpen={formOpen}
+        onClose={() => setFormOpen(false)}
+        location={pinnedLocation}
+        municipality={municipality}
+        onSubmit={() => {
+          setFormOpen(false);
+          setPinnedLocation(null);
+          setMunicipality(null);
+        }}
+      />
     </div>
   );
 }
