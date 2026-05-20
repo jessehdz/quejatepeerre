@@ -9,19 +9,10 @@ export const APP_NAME = "QuéjatePeErre";
 export const CATEGORIES = [
     { key: 'pothole', label: 'Hoyo', icon: FaRoadCircleExclamation, color: '#EF4444' },
     { key: 'power', label: 'Apagón', icon: FaBolt, color: '#FF6B35' },
-    { key: 'water', label: 'Agua', icon: FaDroplet, color: '#7bafd4' },
-    { key: 'road', label: 'Carretera', icon: FaRoad, color: '#9B5CF6' },
-    { key: 'light', label: 'Alumbrado', icon: BsFillLightbulbOffFill, color: '#00d4a8' },
+    { key: 'water', label: 'Agua', icon: FaDroplet, color: '#3B82F6' },
+    { key: 'road', label: 'Carretera', icon: FaRoad, color: '#8B5CF6' },
+    { key: 'light', label: 'Alumbrado', icon: BsFillLightbulbOffFill, color: '#10B981' },
 ];
-
-// Category colors - used for map pins, card borders, and badges
-export const CATEGORY_COLORS = {
-    pothole: '#EF4444',
-    power: '#FF6B35',
-    water: '#7bafd4',
-    road: '#9B5CF6',
-    light: '#00d4a8',
-};
 
 // Severity colors - used for severity badges and indicators
 export const SEVERITY_COLORS = {
