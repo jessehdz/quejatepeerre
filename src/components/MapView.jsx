@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import Map, { Marker, Popup } from "react-map-gl/maplibre";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
+import { FaExclamation } from "react-icons/fa";
 import { MdLocationOn } from "react-icons/md";
 import { CATEGORY_COLORS } from "../lib/constants";
 import './MapView.css';
@@ -53,7 +54,7 @@ function MapView({ onPinDrop, pinnedLocation, reports = [] }) {
                             setSelectedReport(report);
                         }}
                     >
-                        <MdLocationOn className="report-pin" color={CATEGORY_COLORS[report.category]}/>
+                        <FaExclamation className="report-pin" color={CATEGORY_COLORS[report.category]}/>
                     </Marker>
                 ))}
 
