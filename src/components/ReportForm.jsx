@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { CATEGORIES } from '../lib/constants';
+import { submitReport } from '../lib/api';
 import './ReportForm.css';
 import { CgCloseO } from "react-icons/cg";
 
@@ -5,14 +8,94 @@ import { CgCloseO } from "react-icons/cg";
 Props:
 - isOpen: boolean - whether the form is currently open/visible
 - onClose: function() - callback to close the form
-- location: { lat, lng } - the coordinates of the report location
+- lng: longitude coordinates of the report location
+- lat: latitude coordinates of the report location
 - municipality: string - the name of the municipality (for display)
 - onSubmit: function(reportData) - callback to handle form submission, receives the report data object
 */
 
-function ReportForm({ isOpen, onClose, location, municipality, onSubmit }) {
+function ReportForm({ isOpen, onClose, lng, lat, municipality, onSubmit }) {
+
+    const [category, setCategory] = useState(null); // category selection
+    const [title, setTitle] = useState(''); // report title input text
+    const [description, setDescription] = useState(''); // report description input textarea
+    const [submitting, setSubmitting] = useState(false); // submission state for showing loading indicator
+    const [submitError, setSubmitError] = useState(null); // error state for submission errors
+    const [errors, setErrors] = useState({}); // validation errors for form fields
+    const [successMessage, setSuccessMessage] = useState(null); // success message after successful submission
+
+    // input field validation
+    function validate() {
+        const newErrors = {};
+        // category must be selected
+        if (!category) newErrors.category = 'Por favor selecciona una categoría.';
+
+        // title and description must not be empty (removes whitespace)
+        if (!title.trim()) newErrors.title = 'El título no puede estar vacío.';
+        if (!description.trim()) newErrors.description = 'La descripción no puede estar vacía.';
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0; // valid if no errors
+    }
+
+    // handle form submission
+    async function handleSubmit() {
+        if (!validate()) return; // if validation fails, do not submit
+        
+        setSubmitting(true);
+        setSubmitError(null);
+        setSuccessMessage(null);
+
+        try {
+            // success or error response when submitting the report data to the API
+            await submitReport({
+                category,
+                title: title.trim(),
+                description: description.trim(),
+                lng,
+                lat,
+                municipality: municipality || 'Puerto Rico',
+                status: 'open', // new reports start with 'open' status
+                vote_count: 0, // initial vote count for new reports
+            });
+
+            // successful submission
+            setSuccessMessage(true);
+            
+        } catch (error) {
+            // error during submission
+            console.error("Error submitting report:", error);
+            setSubmitError('Hubo un error al enviar tu reporte. Por favor intenta de nuevo.');
+        } finally {
+            setSubmitting(false);
+        } 
+    }
+
     if (!isOpen) return null; // don't render anything if the form is not open
 
+    // submit button state - grayed out and unclickable if currently submitting or if validation fails
+    const isValid = category && title.trim() && description.trim().length >= 20;
+
+    // success screen after successful submission
+    if (successMessage) {
+        return (
+            <>
+                <div className="form-backdrop" onClick={onSubmit} />
+                <div className='form-panel'>
+                    <div className='form-handle' />
+                    <div className='form-success'>
+                        <div className='success-icon'>✓</div>
+                        <h3 className='success-title'>Tu reporte ha sido enviado</h3>
+                        <p className='success-sub'>Gracias por hacer Puerto Rico mejor.</p>
+                        <button className='close-btn' style={{marginTop: 24}} onClick={onClose}>Cerrar</button>
+                    </div>
+                    
+                </div>
+            </>
+        );
+    }
+
+
+    // main form
     return (
         <>
             {/* backdrop - dark overlay behind the form */}
@@ -27,7 +110,7 @@ function ReportForm({ isOpen, onClose, location, municipality, onSubmit }) {
                     <button className='close-btn' onClick={onClose}><CgCloseO /></button>
                 </div>
                     
-                {/* municipality display - auto-populated */}
+                {/* municipality display - auto-populated (read only) */}
                 <div className='form-field'>
                     <label className='form-label' htmlFor="formMunicipality">Municipio:</label>
                     <div className='form-static'>
@@ -35,11 +118,72 @@ function ReportForm({ isOpen, onClose, location, municipality, onSubmit }) {
                     </div>
                 </div>
                 
-                
-                {/* placeholder: field for report details */}
-                <p style={{ color: 'var(--muted)', fontFamily: 'DM Mono', fontSize: 11, padding: '8px 0' }}>
-                    [Aquí irían los campos para detalles del reporte - por ahora es solo un placeholder de texto.]
-                </p>
+                {/* category picker */}
+                <div className='form-field'>
+                    <label className='form-label'>CATEGORÍA</label>
+                    <div className='cat-grid'>
+                        {CATEGORIES.map(cat => (
+                            <button 
+                                key={cat.key}
+                                className={`cat-btn ${category === cat.key ? 'selected' : ''}`}
+                                // sets cat color per button
+                                style={{ '--cat-color': cat.color }} 
+                                onClick={() => setCategory(cat.key)}
+                            >
+                                <span className='cat-btn-icon'><cat.icon /></span>
+                                <span className='cat-btn-label'>{cat.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                    {/* validation error message below grid if validation fails */}
+                    {errors.category && <p className='form-error'>{errors.category}</p>}
+                </div>
+
+                {/* title input */}
+                <div className='form-field'>
+                    <label className='form-label'>TÍTULO</label>
+                    <input
+                        className={`form-input ${errors.title ? 'input-error' : ''}`}
+                        type='text'
+                        maxLength={80}
+                        placeholder='Describe brevemente el problema'
+                        value={title}
+                        onChange={e => setTitle(e.target.value)}
+                    />
+                    {errors.title && <p className='form-error'>{errors.title}</p>}
+                </div>
+
+                {/* description textarea */}
+                <div className='form-field'>
+                    <label className='form-label'>DESCRIPCIÓN</label>
+                    <textarea
+                        className={`form-textarea ${errors.description ? 'input-error' : ''}`}
+                        maxLength={500}
+                        placeholder='¿Cuánto tiempo lleva así? ¿Qué tan peligroso es?'
+                        value={description}
+                        onChange={e => setDescription(e.target.value)}
+                    />
+                    {/* live character count */}
+                    <div className='char-count'>{description.length}/500</div>
+                    {errors.description && <p className='form-error'>{errors.description}</p>}
+                </div>
+
+                {/* anonymity assurance message */}
+                <p className='anon-notice'>Este reporte es 100% anónimo. No se requiere cuenta.</p>
+
+                {/* server level error */}
+                {submitError && (
+                    <p className='form-error' style={{ marginBottom: 12 }}>{submitError}</p>
+                )}
+
+                {/* submit button - disabled until form is valid */}
+                <button
+                    className={`submit-btn ${!isValid || submitting ? 'disabled' : ''}`}
+                    onClick={handleSubmit}
+                    disabled={!isValid || submitting}
+                >
+                    {submitting ? 'Enviando...' : 'Enviar reporte'}
+                </button>
             </div>
         </>
     );
