@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from './lib/supabase'
 import Header from "./components/Header";
 import MapView from "./components/MapView";
 import FeedScreen from "./components/FeedScreen";
@@ -146,7 +147,8 @@ function App() {
       <ReportForm 
         isOpen={formOpen}
         onClose={() => setFormOpen(false)}
-        location={pinnedLocation}
+        lng={pinnedLocation?.lng}
+        lat={pinnedLocation?.lat}
         municipality={municipality}
         onSubmit={() => {
           setFormOpen(false);
