@@ -3,7 +3,7 @@ import Map, { Marker, Popup } from "react-map-gl/maplibre";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 import { FaExclamation } from "react-icons/fa";
 import { MdLocationOn } from "react-icons/md";
-import { CATEGORY_COLORS } from "../lib/constants";
+import { CATEGORIES } from "../lib/constants";
 import './MapView.css';
 
 // dark mode - map style from MapTiler URL
@@ -15,6 +15,8 @@ const PR_CENTER = {
     latitude: 18.2208,
     zoom: 8.5,
 };
+
+const CATEGORY_COLORS = Object.fromEntries(CATEGORIES.map(c => [c.key, c.color]));
 
 /* interactive map view component 
 
