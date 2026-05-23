@@ -17,6 +17,8 @@ Props:
 function ReportForm({ isOpen, onClose, lng, lat, municipality, onSubmit }) {
 
     const [category, setCategory] = useState(null); // category selection
+    const [subcategory, setSubcategory] = useState(null); // subcategory selection
+
     const [title, setTitle] = useState(''); // report title input text
     const [description, setDescription] = useState(''); // report description input textarea
     const [submitting, setSubmitting] = useState(false); // submission state for showing loading indicator
@@ -24,11 +26,23 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, onSubmit }) {
     const [errors, setErrors] = useState({}); // validation errors for form fields
     const [successMessage, setSuccessMessage] = useState(null); // success message after successful submission
 
+    // subcategory reset when category changes
+    function handleCategorySelect(catKey) {
+        setCategory(catKey);
+        setSubcategory(null); 
+    }
+
+    // find the selected category object based on the selected category key, used to display category-specific subcategories and colors
+    const selectedCategory = CATEGORIES.find(c => c.key === category);
+
     // input field validation
     function validate() {
         const newErrors = {};
         // category must be selected
-        if (!category) newErrors.category = 'Por favor selecciona una categoría.';
+        if (!category) newErrors.category = 'Selecciona una categoría.';
+        // if the selected category has subcategories, a subcategory must be selected
+        const hasSubs = selectedCategory?.subcategories.length > 0;
+        if (hasSubs && !subcategory) newErrors.category = 'Selecciona una subcategoría.';
 
         // title and description must not be empty (removes whitespace)
         if (!title.trim()) newErrors.title = 'El título no puede estar vacío.';
@@ -36,6 +50,9 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, onSubmit }) {
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0; // valid if no errors
     }
+
+    // submit button state - grayed out and unclickable if currently submitting or if validation fails
+    const isValid = category && title.trim() && description.trim().length >= 20;
 
     // handle form submission
     async function handleSubmit() {
@@ -49,6 +66,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, onSubmit }) {
             // success or error response when submitting the report data to the API
             await submitReport({
                 category,
+                subcategory: subcategory || null,
                 title: title.trim(),
                 description: description.trim(),
                 lng,
@@ -72,8 +90,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, onSubmit }) {
 
     if (!isOpen) return null; // don't render anything if the form is not open
 
-    // submit button state - grayed out and unclickable if currently submitting or if validation fails
-    const isValid = category && title.trim() && description.trim().length >= 20;
+    
 
     // success screen after successful submission
     if (successMessage) {
@@ -118,17 +135,17 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, onSubmit }) {
                     </div>
                 </div>
                 
-                {/* category picker */}
+                {/* main category picker */}
                 <div className='form-field'>
                     <label className='form-label'>CATEGORÍA</label>
-                    <div className='cat-grid'>
+                    <div className='cat-grid-main'>
                         {CATEGORIES.map(cat => (
                             <button 
                                 key={cat.key}
-                                className={`cat-btn ${category === cat.key ? 'selected' : ''}`}
+                                className={`cat-btn-main ${category === cat.key ? 'selected' : ''}`}
                                 // sets cat color per button
                                 style={{ '--cat-color': cat.color }} 
-                                onClick={() => setCategory(cat.key)}
+                                onClick={() => handleCategorySelect(cat.key)}
                             >
                                 <span className='cat-btn-icon'><cat.icon /></span>
                                 <span className='cat-btn-label'>{cat.label}</span>
@@ -138,6 +155,25 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, onSubmit }) {
                     {/* validation error message below grid if validation fails */}
                     {errors.category && <p className='form-error'>{errors.category}</p>}
                 </div>
+
+                {/* subcategory picker - only shows if a main category is selected */}
+                {selectedCategory && selectedCategory.subcategories.length > 0 && (
+                    <div className='form-field'>
+                        <label className='form-label'>SUBCATEGORÍA</label>
+                        <div className='sub-cat-grid'>
+                            {selectedCategory.subcategories.map(subcat => (
+                                <button 
+                                    key={subcat}
+                                    className={`sub-cat-btn ${subcategory === subcat ? 'selected' : ''}`}
+                                    style={{ '--cat-color': selectedCategory.color }}
+                                    onClick={() => setSubcategory(subcat)}
+                                >
+                                    {subcat}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* title input */}
                 <div className='form-field'>

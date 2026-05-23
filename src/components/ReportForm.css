@@ -15,9 +15,9 @@
     background: var(--bg);
     border-radius: 24px 24px 0 0;
     border-top: 3px solid var(--bg2);
-    padding: 0 20px 40px;
+    padding: 0 20px 110px;
     z-index: 201;
-    height: 700px;
+    height: 880px;
     max-height: 85vh;
     overflow-y: auto;
 }
@@ -98,40 +98,41 @@
 }
 
 /* category grid */
-.cat-grid {
+.cat-grid-main {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
 }
 
-.cat-btn {
+.cat-btn-main {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 10px 4px;
-    border-radius: 12px;
+    gap: 6px;
+    padding: 14px 8px;
+    border-radius: 14px;
     border: 1.5px solid var(--muted);
     background: var(--bg2);
     color: var(--cream);
+    min-height: 80px;
     cursor: pointer;
     transition: all .15s;
 }
 
 /* category color set via variable */
-.cat-btn.selected {
+.cat-btn-main.selected {
     border-color: var(--cat-color);
     background-color: color-mix(in srgb, var(--cat-color) 15%, transparent);
     /* color: var(--cat-color); */
 }
 
-.cat-btn-icon {
+.cat-btn-main .cat-btn-icon {
     font-size: 18px;
     color: var(--muted);
     line-height: 1;
 }
 
-.cat-btn.selected 
+.cat-btn-main.selected 
 .cat-btn-icon {
     color: var(--cat-color);
 }
@@ -141,11 +142,40 @@
     font-size: 11px;
     letter-spacing: .06em;
     color: var(--muted);
+    line-height: 1.2;
     text-transform: uppercase;
 }
 
-.cat-btn.selected 
+.cat-btn-main.selected 
 .cat-btn-label {
+    color: var(--cream);
+}
+
+/* subcategory grid */
+.sub-cat-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.sub-cat-btn {
+    padding: 8px 12px;
+    border-radius: 14px;
+    border: 1.5px solid var(--muted);
+    background: var(--bg2);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+}
+
+.sub-cat-btn.selected {
+    border-color: var(--cat-color);
+    background-color: color-mix(in srgb, var(--cat-color) 15%, transparent);
     color: var(--cream);
 }
 
