@@ -3,13 +3,13 @@
     overflow: hidden;
     margin-bottom: 8px;
     background: var(--bg);
-    border: 1px solid var(--bg2);
+    border: 1px solid var(--tile2);
     cursor: pointer;
     transition: border-color 0.2s ease;
 }
 
 .report-card:hover {
-    border-color: var(--tile2);
+    border-color: var(--muted);
 }
 
 /* category tiles */
@@ -27,9 +27,8 @@
 }
 
 .tile-label {
-    font-family: 'DM Mono', monospace;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 700;
     letter-spacing: .08em;
     color: var(--cream);
     text-transform: uppercase;
@@ -52,13 +51,63 @@
     background: var(--light);
 }
 
+/* categories_7 background colors */
+.cat-infrastructure {
+    background: var(--infrastructure);
+}
+.cat-security {
+    background: var(--security);
+}
+.cat-environment {
+    background: var(--environment);
+}
+.cat-community {
+    background: var(--community);
+}
+.cat-services {
+    background: var(--services);
+}
+.cat-other {
+    background: var(--other);
+}
+
+/* categories_15 background colors */
+.cat-luma_power {
+    background: var(--luma_power);
+}
+.cat-sports {
+    background: var(--sports);
+}
+.cat-businesses {
+    background: var(--businesses);
+}
+.cat-health {
+    background: var(--health);
+}
+.cat-transit {
+    background: var(--transit);
+}
+.cat-education {
+    background: var(--education);
+}
+.cat-trash {
+    background: var(--trash);
+}
+.cat-housing {
+    background: var(--housing);
+}
+.cat-noise {
+    background: var(--noise);
+}
+.cat-injustice {
+    background: var(--injustice);
+}
+
 /* severity levels - pill */
 .sev-pill {
     position: absolute;
-    /* top: 7px; */
     right: 10px;
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: .08em;
     padding: 3px 9px;
     border-radius: var(--r-pill);
@@ -87,9 +136,9 @@
 }
 
 .card-title {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font_content);
     font-size: 18px;
-    font-weight: 900;
+    font-weight: 500;
     margin-bottom: 3px;
     color: var(--cream);
     line-height: 1.5;
@@ -97,11 +146,21 @@
 
 /* municipality and days */
 .card-meta {
-    font-family: 'DM Mono', monospace;
     font-size: 12px;
+    font-weight: 700;
     color: var(--muted);
     letter-spacing: .06em;
     margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.card-exact-loc {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .04em;
+    margin-top: -6px;
+    margin-bottom: 10px;
+    opacity: .75;
     text-transform: uppercase;
 }
 
@@ -115,7 +174,6 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    font-family: 'DM Mono', monospace;
     font-size: 12px;
     letter-spacing: .06em;
     font-weight: 500;

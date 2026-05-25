@@ -35,28 +35,27 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 0 18px;
-    font-family: 'Syne', sans-serif;
+    text-transform: uppercase;
 }
 
-.form-title {
-    font-family: 'Syne Mono', monospace;
+/* .form-title {
     font-size: 18px;
     font-weight: 600;
     color: var(--cream);
     letter-spacing: -.02;
-}
+} */
 
 .close-btn {
     background: transparent;
     border: none;
     color: var(--muted);
-    font-size: 18px;
+    font-size: 22px;
     cursor: pointer;
     min-width: 44px;
     min-height: 44px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: end;
 }
 
 .form-field {
@@ -65,7 +64,6 @@
 
 .form-label {
     display: block;
-    font-family: 'DM Mono', monospace;
     font-size: 12px;
     letter-spacing: .14em;
     color: var(--muted);
@@ -73,8 +71,8 @@
     margin-bottom: 6px;
 }
 
-.formMunicipality {
-    font-family: 'Syne', sans-serif;
+/* .formMunicipality {
+    font-family: var(--font_content);
     font-size: 14px;
     font-weight: 600;
     color: var(--cel);
@@ -82,13 +80,13 @@
     background: rgba(123,175,212,0.08);
     border: 1px solid rgba(123,175,212,0.2);
     border-radius: 10px;    
-}
+} */
 
 /* Read-only municipality display — styled like an input but not editable */
 .form-static {
-    font-family: 'Syne', sans-serif;
+    font-family: var(--font_content);
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 900;
     color: var(--cel);
     padding: 8px 12px;
     background: rgba(123,175,212,0.08);
@@ -138,7 +136,7 @@
 }
 
 .cat-btn-label {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font_main);
     font-size: 11px;
     letter-spacing: .06em;
     color: var(--muted);
@@ -159,12 +157,12 @@
 }
 
 .sub-cat-btn {
+    font-family: var(--font_main);
     padding: 8px 12px;
     border-radius: 14px;
     border: 1.5px solid var(--muted);
     background: var(--bg2);
     color: var(--muted);
-    font-family: 'DM Mono', monospace;
     font-size: 11px;
     letter-spacing: .06em;
     text-transform: uppercase;
@@ -187,7 +185,7 @@
     border: 1px solid var(--muted);
     border-radius: 8px;
     padding: 11px 14px;
-    font-family: 'Syne', sans-serif;
+    font-family: var(--font_content);
     font-size: 16px;
     color: var(--cream);
     outline: none;
@@ -208,7 +206,6 @@
 .form-textarea {
     min-height: 90px;
     resize: none;
-    font-family: 'Syne', sans-serif;
 }
 
 .char-count {
@@ -239,7 +236,7 @@
     border-radius: 8px;
     background-color: var(--red);
     color: #fff;
-    font-family: 'DM Mono', monospace;
+    font-family: 'Electrolize', monospace;
     font-size: 12px;
     text-transform: uppercase;
     font-weight: 700;
@@ -279,7 +276,7 @@
 }
 
 .succes-sub {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Electrolize', monospace;
     font-size: 10px;
     color: var(--muted);
     letter-spacing: .06em;

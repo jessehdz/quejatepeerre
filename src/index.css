@@ -42,11 +42,18 @@
   --ignor: #7A6A28;
   --nuevo: #2A8A8A;
 
+  /* fonts */
+  --font_main: 'Electrolize', monospace;
+  /* --font_main: 'Space Grotesk', sans-serif; */
+  /* --font_main: 'Saira', sans-serif; */
+  /* --font_main: 'Sarpanch', sans-serif; */
+  --font_content: 'Noto Sans HK', sans-serif;
+
 }
 
 /* Base body styles */
 body {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font_main);
   background: var(--bg);
   color: var(--cream);
   min-height: 100vh;
