@@ -123,7 +123,7 @@ export const CATEGORIES_15 = [
     },
 ]
 
-export const CATEGORIES_7 = [
+export const CATEGORIES_6 = [
     {
         key: 'infrastructure',
         label: 'Infraestructura',
@@ -178,7 +178,7 @@ export const CATEGORIES_7 = [
     },
 ]
 
-export const CATEGORIES = CATEGORIES_7; // switch between categories
+export const CATEGORIES = CATEGORIES_6; // switch between categories
 
 // Severity colors - used for severity badges and indicators
 export const SEVERITY_COLORS = {
