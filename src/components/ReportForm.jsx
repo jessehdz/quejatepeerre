@@ -14,7 +14,7 @@ Props:
 - onSubmit: function(reportData) - callback to handle form submission, receives the report data object
 */
 
-function ReportForm({ isOpen, onClose, lng, lat, municipality, onSubmit }) {
+function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, onSubmit }) {
 
     const [category, setCategory] = useState(null); // category selection
     const [subcategory, setSubcategory] = useState(null); // subcategory selection
@@ -72,6 +72,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, onSubmit }) {
                 lng,
                 lat,
                 municipality: municipality || 'Puerto Rico',
+                exactLocation: exactLocation || null,
                 status: 'open', // new reports start with 'open' status
                 vote_count: 0, // initial vote count for new reports
             });
@@ -127,11 +128,19 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, onSubmit }) {
                     <button className='close-btn' onClick={onClose}><CgCloseO /></button>
                 </div>
                     
-                {/* municipality display - auto-populated (read only) */}
+                {/* municipality and exact location display - auto-populated (read only) */}
                 <div className='form-field'>
                     <label className='form-label' htmlFor="formMunicipality">Municipio:</label>
                     <div className='form-static'>
                         {municipality || 'Toca el mapa para seleccionar ubicación'}
+                    </div>
+                </div>
+                <div className='form-field'>
+                    <label className='form-label' htmlFor="formLocation">Ubicación exacta:</label>
+                    <div className='form-static'>
+                        {exactLocation && (
+                    <p className="card-exact-loc">{exactLocation}</p>
+                )}
                     </div>
                 </div>
                 

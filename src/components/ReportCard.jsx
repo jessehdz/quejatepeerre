@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CATEGORIES } from "../lib/constants";
 import { ChevronUp, TrafficCone } from 'lucide-react';
+import { FaMapPin } from "react-icons/fa6";
 import './ReportCard.css';
 
 /*
@@ -32,6 +33,7 @@ function ReportCard({
     severity = 'CRISIS',
     title = 'Título del reporte va aquí',
     municipality = 'Municipio',
+    exactLocation = 'exacta ubicación',
     daysOpen = 0,
     voteCount = 0,
     onClick,
@@ -78,7 +80,9 @@ function ReportCard({
 
                 {/* municipality and days open */}
                 <p className="card-meta">{municipality} • {daysOpen} DÍAS</p>
-
+                {exactLocation && (
+                    <p className="card-exact-loc"><FaMapPin /> {exactLocation}</p>
+                )}
                 {/* footer */}
                 <div className="card-footer">
                     <button className={`upvote-btn ${voted ? 'voted' : ''}`} onClick={handleUpVote} aria-label={`Yo También: ${votes} votos`}>
