@@ -3,7 +3,7 @@ import { supabase } from './lib/supabase'
 import Header from "./components/Header";
 import MapView from "./components/MapView";
 import FeedScreen from "./components/FeedScreen";
-import { getMunicipality } from "./lib/geocode";
+import { getMunicipality, getExactLocation } from "./lib/geocode";
 import { IoCloseCircle } from "react-icons/io5";
 import ReportForm from "./components/ReportForm";
 import BottomNav from "./components/BottomNav";
@@ -48,6 +48,8 @@ function App() {
   const [municipality, setMunicipality] = useState(null);
   const [loadingMunicipality, setLoadingMunicipality] = useState(false);
 
+  const [exactLocation, setExactLocation] = useState(null);
+
   // state for report form visibility - toggled when form is opened/closed
   const [formOpen, setFormOpen] = useState(false);
 
@@ -58,8 +60,16 @@ function App() {
 
     try {
       // waits for getMunicipality to return the municipality name
-      const muniName = await getMunicipality(lat, lng);
+      // const muniName = await getMunicipality(lng, lat);
+      // setMunicipality(muniName);
+
+      const [muniName, exactLoc] = await Promise.all([
+        getMunicipality(lng, lat),
+        getExactLocation(lng, lat)
+      ]);
+
       setMunicipality(muniName);
+      setExactLocation(exactLoc);
 
       // switch to feed tab to show reports for the new municipality (todo)
       // setActiveTab('feed'); 
@@ -67,10 +77,37 @@ function App() {
       // API fail or error returned - log error and fallback to default 'Puerto Rico'
       console.error("Error fetching municipality:", error);
       setMunicipality('Puerto Rico'); 
+      setExactLocation(null);
     } finally {
       setLoadingMunicipality(false);
     }     
   }
+
+  async function handleFabClick() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { longitude, latitude } = position.coords;
+        setPinnedLocation({ lng: longitude, lat: latitude });
+
+        const [muniName, exactLoc] = await Promise.all([
+          getMunicipality(longitude, latitude),
+          getExactLocation(longitude, latitude)
+        ]);
+        
+        setMunicipality(muniName);
+        setExactLocation(exactLoc);
+        setFormOpen(true); // open the report form after getting location data
+      },
+        () => {
+          alert("No se pudo obtener la ubicación. Por favor, permita el acceso a la ubicación e intente de nuevo.");
+          setFormOpen(true); // open form anyway so user can manually enter location
+        }
+      );
+    } else {
+      setFormOpen(true); // open form anyway so user can manually enter location
+    }
+  }
+
 
   return (
     <div className="app">
@@ -109,14 +146,14 @@ function App() {
 
       {/* content placeholder */}
       <div className="content">
-        <p style={{ color: 'var(--muted)', padding: 16, fontFamily: 'DM Mono, monospace', fontSize: 11 }}>Component Placeholder -- active tab: {activeTab}</p>
+        <p style={{ color: 'var(--muted)', padding: 16, fontFamily: 'Electrolize, monospace', fontSize: 11 }}>Component Placeholder -- active tab: {activeTab}</p>
         
         {/* conditional rendering of feed screen */}
         {(activeTab === 'mapa' || activeTab === 'feed') && (<FeedScreen />)}
         
         {/* details page placeholder */}
         {activeTab === 'datos' && (
-          <div style={{ color: 'var(--muted)', padding: 16, fontFamily: 'DM Mono, monospace', fontSize: 11 }}>
+          <div style={{ color: 'var(--muted)', padding: 16, fontFamily: 'Electrolize, monospace', fontSize: 11 }}>
             <h2>Dashboard de Municipios</h2>
             <p>Aquí se mostrarán los reportes completos del municipio seleccionado.</p>
           </div>
@@ -124,7 +161,7 @@ function App() {
         
         {/* more/menu page placeholder */}
         {activeTab === 'más' && (
-          <div style={{ color: 'var(--muted)', padding: 16, fontFamily: 'DM Mono, monospace', fontSize: 11 }}>
+          <div style={{ color: 'var(--muted)', padding: 16, fontFamily: 'Electrolize, monospace', fontSize: 11 }}>
             <h2>Mas Detalles</h2>
             <p>Aquí se mostrarán más información sobre el municipio y sus reportes.</p>
           </div>
@@ -137,7 +174,7 @@ function App() {
         activeTab={activeTab}
         onTabChange={(tab) => {
           if (tab === 'report') {
-            setFormOpen(true); // open the report form when FAB/Report button is clicked
+            handleFabClick(); // get geolocation, then open the report form
           } else {
             setActiveTab(tab); // switch tabs for other buttons
           }
@@ -149,6 +186,7 @@ function App() {
         onClose={() => setFormOpen(false)}
         lng={pinnedLocation?.lng}
         lat={pinnedLocation?.lat}
+        exactLocation={exactLocation}
         municipality={municipality}
         onSubmit={() => {
           setFormOpen(false);
