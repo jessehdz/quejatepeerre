@@ -15,7 +15,7 @@ export async function getMunicipality(lng, lat) {
 }
 
 // get exact location
-export async function getExactLocation(lat, lng) {
+export async function getExactLocation(lng, lat) {
     const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY;
     const url = `https://api.maptiler.com/geocoding/${lng},${lat}.json?key=${MAPTILER_KEY}`;
 
@@ -25,6 +25,7 @@ export async function getExactLocation(lat, lng) {
     const address = data.features?.find(
         feature => feature.id.startsWith('address') || feature.id.startsWith('poi')
     );
+    console.log(`Reverse geocoding result for (${lat}, ${lng}):`, address);
 
     return address?.place_name || data.features?.[0]?.place_name || 'Ubicación desconocida';
 }
