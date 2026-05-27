@@ -1,13 +1,18 @@
 import { useState, useCallback } from "react";
 import Map, { Marker, Popup } from "react-map-gl/maplibre";
+import { config } from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 import { FaExclamation } from "react-icons/fa";
 import { MdLocationOn } from "react-icons/md";
 import { CATEGORIES } from "../lib/constants";
 import './MapView.css';
 
+const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY;
+// required by @maptiler/sdk v4+ — must be set before the SDK initializes, otherwise detectStore() returns undefined
+config.apiKey = MAPTILER_KEY;
+
 // dark mode - map style from MapTiler URL
-const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${import.meta.env.VITE_MAPTILER_KEY}`;
+const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${MAPTILER_KEY}`;
 
 // default map center - centered on Puerto Rico (eventually could be set to user's location if geolocation permission is granted)
 const PR_CENTER = {
@@ -25,8 +30,7 @@ const CATEGORY_COLORS = Object.fromEntries(CATEGORIES.map(c => [c.key, c.color])
 - reports: array of report objects to display on the map as markers
 */
 function MapView({ onPinDrop, pinnedLocation, reports = [] }) {
-
-    // which report's popup is currently open, null if no popup is open
+// which report's popup is currently open, null if no popup is open
     const [selectedReport, setSelectedReport] = useState(null);
 
     const handleMapClick = useCallback((event) => {
@@ -78,10 +82,10 @@ function MapView({ onPinDrop, pinnedLocation, reports = [] }) {
 
             {/* display pin if pinnedLocation is provided */}
             {pinnedLocation && (
-                    <Marker
-                        longitude={pinnedLocation.lng}
-                        latitude={pinnedLocation.lat}
-                        anchor="bottom" >
+                <Marker
+                    longitude={pinnedLocation.lng}
+                    latitude={pinnedLocation.lat}
+                    anchor="bottom" >
                     <div className="map-pin"><MdLocationOn color="red"/></div>
                 </Marker>)}
         </Map>
