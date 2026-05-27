@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CATEGORIES } from '../lib/constants';
 import { submitReport } from '../lib/api';
 import './ReportForm.css';
-import { CgCloseO } from "react-icons/cg";
+import { IoCloseCircle, IoCamera } from "react-icons/io5";
 
 /* ReportForm - A form component for submitting new reports.
 Props:
@@ -16,11 +16,18 @@ Props:
 
 function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, onSubmit }) {
 
+    // category and subcategory states
     const [category, setCategory] = useState(null); // category selection
     const [subcategory, setSubcategory] = useState(null); // subcategory selection
 
+    // form input states
     const [title, setTitle] = useState(''); // report title input text
     const [description, setDescription] = useState(''); // report description input textarea
+    const [photo, setPhoto] = useState(null); 
+    const [photoPreview, setPhotoPreview] = useState(null);
+    const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+    // submission and validation states
     const [submitting, setSubmitting] = useState(false); // submission state for showing loading indicator
     const [submitError, setSubmitError] = useState(null); // error state for submission errors
     const [errors, setErrors] = useState({}); // validation errors for form fields
@@ -30,6 +37,19 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
     function handleCategorySelect(catKey) {
         setCategory(catKey);
         setSubcategory(null); 
+    }
+
+    function handlePhotoChange(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        setPhoto(file);
+
+        // create a preview URL for the selected photo
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setPhotoPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
     }
 
     // find the selected category object based on the selected category key, used to display category-specific subcategories and colors
@@ -72,7 +92,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                 lng,
                 lat,
                 municipality: municipality || 'Puerto Rico',
-                exactLocation: exactLocation || null,
+                exact_location: exactLocation || null,
                 status: 'open', // new reports start with 'open' status
                 vote_count: 0, // initial vote count for new reports
             });
@@ -104,7 +124,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                         <div className='success-icon'>✓</div>
                         <h3 className='success-title'>Tu reporte ha sido enviado</h3>
                         <p className='success-sub'>Gracias por hacer Puerto Rico mejor.</p>
-                        <button className='close-btn' style={{marginTop: 24}} onClick={onClose}>Cerrar</button>
+                        <button className='close-btn' style={{marginTop: 24}} onClick={onClose}><IoCloseCircle size={28} color="var(--cel)" /></button>
                     </div>
                     
                 </div>
@@ -125,7 +145,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                 <div className='form-handle' />
                 <div className='form-header'>
                     <h2 className='form-title'>Nuevo Reporte</h2>
-                    <button className='close-btn' onClick={onClose}><CgCloseO /></button>
+                    <button className='close-btn' onClick={onClose}><IoCloseCircle size={28} /></button>
                 </div>
                     
                 {/* municipality and exact location display - auto-populated (read only) */}
@@ -137,10 +157,8 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                 </div>
                 <div className='form-field'>
                     <label className='form-label' htmlFor="formLocation">Ubicación exacta:</label>
-                    <div className='form-static'>
-                        {exactLocation && (
-                    <p className="card-exact-loc">{exactLocation}</p>
-                )}
+                    <div className='form-static-loc'>
+                        {exactLocation || 'Toca el mapa para seleccionar ubicación'}
                     </div>
                 </div>
                 
@@ -211,6 +229,36 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                     {/* live character count */}
                     <div className='char-count'>{description.length}/500</div>
                     {errors.description && <p className='form-error'>{errors.description}</p>}
+                </div>
+
+                {/* photo upload */}
+                <div className='form-field'>
+                    <label className='form-label'>FOTO DE EVIDENCIA</label>
+                    {photoPreview ? (
+                        <div className='photo-preview-wrap'>
+                            <img src={photoPreview} alt='Evidencia' className='photo-preview' />
+                            <button className='remove-photo-btn' onClick={() => {setPhoto(null); setPhotoPreview(null);}}>
+                                <IoCloseCircle size={28} />
+                            </button>
+                        </div> 
+                    ) : (
+                    <label className='photo-upload-btn'>
+                        {/* show file input if no photo selected */}
+                        <IoCamera className='photo-upload-icon' size={24} color="var(--cel)" /> 
+                        <input 
+                            type='file' 
+                            accept='image/*' 
+                            capture='environment' // opens camera on mobile if supported
+                            onChange={handlePhotoChange} 
+                            // disabled={uploadingPhoto}
+                            style={{ display: 'none' }}
+                        />
+                    </label>
+                    )}
+
+                    <p className='photo-note'>
+                        La foto debe mostrar claramente el problema. Se usará como evidencia para que las autoridades tomen acción. No subas fotos de personas o información privada.
+                    </p>
                 </div>
 
                 {/* anonymity assurance message */}

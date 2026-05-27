@@ -49,7 +49,6 @@
     background: transparent;
     border: none;
     color: var(--muted);
-    font-size: 22px;
     cursor: pointer;
     min-width: 44px;
     min-height: 44px;
@@ -71,22 +70,26 @@
     margin-bottom: 6px;
 }
 
-/* .formMunicipality {
-    font-family: var(--font_content);
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--cel);
-    padding: 8px 12px;
-    background: rgba(123,175,212,0.08);
-    border: 1px solid rgba(123,175,212,0.2);
-    border-radius: 10px;    
-} */
-
 /* Read-only municipality display — styled like an input but not editable */
 .form-static {
     font-family: var(--font_content);
     font-size: 14px;
     font-weight: 900;
+    letter-spacing: .06em;
+    color: var(--cel);
+    padding: 8px 12px;
+    background: rgba(123,175,212,0.08);
+    border: 1px solid rgba(123,175,212,0.2);
+    border-radius: 10px;
+    text-transform: uppercase;
+}
+
+/* Read-only location display — styled like an input but not editable */
+.form-static-loc {
+    font-family: var(--font_content);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: .06em;
     color: var(--cel);
     padding: 8px 12px;
     background: rgba(123,175,212,0.08);
@@ -195,6 +198,69 @@
 .form-input:focus,
 .form-textarea:focus {
     border-color: var(--cream);
+}
+
+/* photo upload */
+.photo-upload-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1.5px dashed var(--muted);
+    background: transparent;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: .1em;
+    cursor: pointer;
+    transition: border-color .15s;
+}
+
+.photo-upload-btn:hover {
+    border-color: var(--cel);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--cel);
+}
+
+.photo-preview-wrap {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.photo-preview {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+}
+
+.remove-photo-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: var(--red);
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+    padding: 4px 4px;
+    cursor: pointer;
+}
+
+.photo-note {
+    font-family: var(--font_content);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .04em;
+    margin-top: 4px;
+    line-height: 1.4;
 }
 
 /* red border when validation fails */
