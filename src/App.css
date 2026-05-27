@@ -13,7 +13,7 @@
     padding-bottom: 86px; /* bottom-nav clearance on mobile */
 }
 
-/* municipality pin styling - below map after pin drop */
+/* municipality and exact location pin styling - below map after pin drop */
 .muni-pin{
     display: flex;
     align-items: center;
@@ -26,10 +26,23 @@
 }
 
 .muni-pin-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.muni-text {
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 700;
     color: var(--cel);
     letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.exact-loc-text {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: .06em;
     text-transform: uppercase;
 }
 

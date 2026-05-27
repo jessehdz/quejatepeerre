@@ -49,6 +49,7 @@ function App() {
   const [loadingMunicipality, setLoadingMunicipality] = useState(false);
 
   const [exactLocation, setExactLocation] = useState(null);
+  const [loadingExactLocation, setLoadingExactLocation] = useState(false);
 
   // state for report form visibility - toggled when form is opened/closed
   const [formOpen, setFormOpen] = useState(false);
@@ -59,10 +60,6 @@ function App() {
     setLoadingMunicipality(true);
 
     try {
-      // waits for getMunicipality to return the municipality name
-      // const muniName = await getMunicipality(lng, lat);
-      // setMunicipality(muniName);
-
       const [muniName, exactLoc] = await Promise.all([
         getMunicipality(lng, lat),
         getExactLocation(lng, lat)
@@ -80,6 +77,7 @@ function App() {
       setExactLocation(null);
     } finally {
       setLoadingMunicipality(false);
+      setLoadingExactLocation(false);
     }     
   }
 
@@ -116,33 +114,47 @@ function App() {
       <MapView 
         onPinDrop={handlePinDrop}
         pinnedLocation={pinnedLocation}
+        exactLocation={exactLocation}
         reports={SAMPLE_REPORTS} // pass sample reports to MapView for testing
       />
 
-      {/* municipality name when pin is dropped */}
+      {/* municipality and exact location when pin is dropped */}
       {pinnedLocation && (
         <div className="muni-pin">
+          <div className="muni-pin-text"> 
           {loadingMunicipality ? (
-            <span className="muni-pin-text" style={{ color: 'var(--muted)' }}>
+            <span className="muni-text" style={{ color: 'var(--muted)' }}>
               Detectando municipio...
             </span>
           ) : (
-            <span className="muni-pin-text">
+            <span className="muni-text">
               {municipality}
             </span>
           )}
+          {loadingExactLocation ? (
+            <span className="exact-loc-text">
+              Obteniendo ubicación exacta...
+            </span>
+          ) : (
+            <span className="exact-loc-text">
+              {exactLocation}
+            </span>
+            )}
+            
+          </div>
           {/* button to remove pin and reset states */}
           <button 
             className="remove-pin-btn"
             onClick={() => {
               setPinnedLocation(null);
               setMunicipality(null);
+              setExactLocation(null);
             }}
           >
             <IoCloseCircle size={28} color="var(--cel)" />
           </button>
         </div>
-          )}
+      )}
 
       {/* content placeholder */}
       <div className="content">

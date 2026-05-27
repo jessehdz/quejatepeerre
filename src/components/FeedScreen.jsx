@@ -73,7 +73,7 @@ function FeedScreen() {
             {SAMPLE_REPORTS.map((report) => (
                 <ReportCard
                     key={report.id}
-                    // exactLocation={report.exactLocation}
+                    exactLocation={report.exactLocation}
                     {...report} />
             ))}
         </div>
