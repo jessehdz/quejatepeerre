@@ -83,6 +83,15 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
         setSuccessMessage(null);
 
         try {
+            let imageURL = null;
+
+            // upload photo if one is selected
+            if (photo) {
+                setUploadingPhoto(true);
+                imageURL = await uploadPhoto(photo);
+                setUploadingPhoto(false);
+            }
+
             // success or error response when submitting the report data to the API
             await submitReport({
                 category,
@@ -93,6 +102,8 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                 lat,
                 municipality: municipality || 'Puerto Rico',
                 exact_location: exactLocation || null,
+                image_url: imageURL,
+                draft: false, // all reports are *currently* submitted as final, not drafts
                 status: 'open', // new reports start with 'open' status
                 vote_count: 0, // initial vote count for new reports
             });
@@ -106,6 +117,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
             setSubmitError('Hubo un error al enviar tu reporte. Por favor intenta de nuevo.');
         } finally {
             setSubmitting(false);
+            setUploadingPhoto(false);
         } 
     }
 
@@ -275,7 +287,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                     onClick={handleSubmit}
                     disabled={!isValid || submitting}
                 >
-                    {submitting ? 'Enviando...' : 'Enviar reporte'}
+                    {uploadingPhoto ? 'Subiendo foto...' : submitting ? 'Enviando...' : 'Enviar reporte'}
                 </button>
             </div>
         </>
