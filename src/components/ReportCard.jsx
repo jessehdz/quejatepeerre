@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CATEGORIES } from "../lib/constants";
-import { ChevronUp, TrafficCone } from 'lucide-react';
+import { ChevronUp, Icon, TrafficCone } from 'lucide-react';
 import { FaMapPin } from "react-icons/fa6";
 import './ReportCard.css';
 
@@ -15,9 +15,10 @@ import './ReportCard.css';
   - An upvote button that increments once per session
   
   PROPS:
-    category — 'hoyo' | 'apagon' | 'agua' | 'carret' | 'alumb'
-    icon — emoji: 'MdConstruction' 'FaBolt' 'FaDroplet' 'FaRoad' 'FaLightbulb'
-    label — display name: 'Hoyo', 'Apagón', etc.
+    category
+    subcategory
+    icon
+    label 
     severity — 'CRISIS' | 'VERGÜENZA' | 'IGNORADO' | 'NUEVO'
     title — the report title text
     municipality — 'San Juan', 'Bayamón', etc.
@@ -26,71 +27,49 @@ import './ReportCard.css';
     onClick — optional: function called when the card is tapped
 */
 
-function ReportCard({
-    category = 'power',
-    icon = 'TrafficCone',
-    label = 'hoyo',
-    severity = 'CRISIS',
-    title = 'Título del reporte va aquí',
-    municipality = 'Municipio',
-    exactLocation = 'exacta ubicación',
-    daysOpen = 0,
-    voteCount = 0,
-    onClick,
-}) {
-    const [votes, setVotes] = useState(voteCount);
-    const [voted, setVoted] = useState(false);
-
-    function handleUpVote(e) {
-        e.stopPropagation(); // prevent card click
-        
-        // check for existing vote
-        if (!voted) {
-            setVotes(votes + 1);
-            setVoted(true); /* toggle to "voted" state to prevent multiple votes in same session */
-        }
-    }
-
-    const severityClass = severity.toLowerCase().replace('ü', 'u'); // convert "VERGÜENZA" to "vergüenza" for CSS class
-    
-    const categoryData = CATEGORIES.find(cat => cat.key === category) || {};
-    const Icon = categoryData.icon || TrafficCone; // default icon if category not found
-    const catColor = categoryData.color || '#999'; // default color if category not found
-    const catLabel = categoryData.label || label; // use category label from constants or fallback to prop
-
-
+function ReportCard() {
+   
     return (
-        <div className="report-card" onClick={onClick}>
-            {/* category tile */}
-            <div className={`card-tile`} style={{ backgroundColor: catColor }}>
+        <div className="report-card-wrap">
 
-                <span className="tile-icon"><Icon size={18}/></span>
-                <span className="tile-label">{catLabel}</span>
+      {/* THE CARD — clip-path cuts the folder tab shape */}
+        <div className="report-card-shape">
 
-                {/* severity badge */}
-                <span className={`sev-pill sev-${severityClass}`}>
-                    {severity}
-                </span>
+            {/* TAB — sits at the very top */}
+                <div className="card-tab-space">
+                    <TrafficCone size={14} />
+                <span className="tab-label">INFRAESTRUCTURA</span>
             </div>
 
-            {/* card body */}
+            {/* BODY — photo left, data right */}
             <div className="card-body">
-                {/* report title */}
-                <p className="card-title">{title}</p>
-
-                {/* municipality and days open */}
-                <p className="card-meta">{municipality} • {daysOpen} DÍAS</p>
-                {exactLocation && (
-                    <p className="card-exact-loc"><FaMapPin /> {exactLocation}</p>
-                )}
-                {/* footer */}
-                <div className="card-footer">
-                    <button className={`upvote-btn ${voted ? 'voted' : ''}`} onClick={handleUpVote} aria-label={`Yo También: ${votes} votos`}>
-                        <ChevronUp color="#fff" /> {votes}
-                    </button>
+                <div className="card-photo">
+                    {/* {image_url
+                        ? <img src={image_url} alt="Evidencia" className="photo-img" />
+                        : <div className="photo-placeholder">🚧</div>
+                    } */}
+                    <div className="photo-overlay">
+                        <p className="overlay-label">DÍAS SIN REPARAR</p>
+                        <p className="overlay-days">214</p>
+                    </div>
                 </div>
+                    
+                <div className="card-divider"></div>
+                
+                    <div className="card-data">
+                        <h3 className="card-title">Título del Reporte</h3>
+                        <p className="card-subcategory" style={{ color: CATEGORIES.color}}>HOYO</p>
+                        <p className="card-meta">San Juan • 5 días</p>
+                        <p className="card-exact-loc">Ubicación exacta</p>
+                    </div>
             </div>
+
         </div>
+
+        {/* SEV PILL — outside the clipped shape so it's visible */}
+        <span className="sev-pill">VERGÜENZA</span>
+
+    </div>
     )
 }
 
