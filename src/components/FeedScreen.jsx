@@ -1,67 +1,56 @@
 import ReportCard from "./ReportCard";
 import './FeedScreen.css';
-import { Icon } from "lucide-react";
 
 const SAMPLE_REPORTS = [
     {
         id: 1,
         category: 'infrastructure',
-        label: 'Hoyo',
-        icon: <Icon />,
-        severity: 'CRISIS',
+        subcategory: 'Hoyos',
         title: 'Hoyo en Av. Ponce de León',
         municipality: 'San Juan',
-        exactLocation: '235 Av. Ponce de León, San Juan, PR',
-        daysOpen: 120,
-        voteCount: 34,
+        exact_location: '235 Av. Ponce de León, San Juan, PR',
+        vote_count: 34,
+        created_at: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString(),
     },
     {
         id: 2,
-        category: 'power',
-        label: 'Apagón',
-        icon: <Icon />,
-        severity: 'VERGÜENZA',
+        category: 'luma_power',
+        subcategory: 'Apagón',
         title: 'Apagón en Bayamón desde hace 3 días',
         municipality: 'Bayamón',
-        exactLocation: 'Calle 3, Bayamón, PR',
-        daysOpen: 3,
-        voteCount: 12,
+        exact_location: 'Calle 3, Bayamón, PR',
+        vote_count: 12,
+        created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     },
     {
         id: 3,
-        category: 'water',
-        label: 'Agua',
-        icon: <Icon />,
-        severity: 'IGNORADO',
+        category: 'services',
+        subcategory: null,
         title: 'Sin agua en Carolina desde hace semanas',
         municipality: 'Carolina',
-        exactLocation: 'Calle 5, Carolina, PR',
-        daysOpen: 45,
-        voteCount: 5,
+        exact_location: 'Calle 5, Carolina, PR',
+        vote_count: 5,
+        created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
     },
     {
         id: 4,
-        category: 'light',
-        label: 'Alumbrado',
-        icon: <Icon />,
-        severity: 'IGNORADO',
+        category: 'infrastructure',
+        subcategory: 'Alumbrado público',
         title: 'Sin alumbrado en San Juan desde hace meses',
         municipality: 'San Juan',
-        exactLocation: 'Calle 10, San Juan, PR',
-        daysOpen: 60,
-        voteCount: 8,
+        exact_location: 'Calle 10, San Juan, PR',
+        vote_count: 8,
+        created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
     },
     {
         id: 5,
-        category: 'road',
-        label: 'Carretera',
-        icon: <Icon />,
-        severity: 'NUEVO',
+        category: 'infrastructure',
+        subcategory: 'Derrumbes',
         title: 'Carretera en mal estado en Ponce',
         municipality: 'Ponce',
-        exactLocation: 'PR-2, Ponce, PR',
-        daysOpen: 1,
-        voteCount: 0,
+        exact_location: 'PR-2, Ponce, PR',
+        vote_count: 0,
+        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     }
 ];
 
@@ -73,8 +62,7 @@ function FeedScreen() {
             {SAMPLE_REPORTS.map((report) => (
                 <ReportCard
                     key={report.id}
-                    exactLocation={report.exactLocation}
-                    {...report} />
+                    report={report} />
             ))}
         </div>
     );
