@@ -7,6 +7,7 @@
 
 .form-panel {
     position: fixed;
+    overflow-x: hidden;
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
@@ -38,12 +39,72 @@
     text-transform: uppercase;
 }
 
-/* .form-title {
+/* location block */
+.loc-label {
+    font-family: var(--font_main);
+    font-size: 12px;
+    letter-spacing: .14em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.loc-block {
+    margin-bottom: 22px;
+    background: var(--bg2);
+    border-radius: 16px 4px 16px 16px;
+    padding: 16px;
+    position: relative;
+}
+
+.loc-muni {
+    font-family: var(--font_main);
     font-size: 18px;
-    font-weight: 600;
-    color: var(--cream);
-    letter-spacing: -.02;
-} */
+    font-weight: 900;
+    letter-spacing: .06em;
+    color: var(--cel);
+    text-transform: uppercase;
+    margin-bottom: 0;
+}
+
+.loc-exact {
+    font-family: var(--font_content);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: .06em;
+    color: var(--cel);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.loc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font_content);
+    font-size: 10px;
+    color: var(--cel);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    background: rgba(123,175,212,0.08);
+    border: 1px solid rgba(123,175,212,0.2);
+    border-radius: 10px;
+    padding: 4px 8px;
+}
+
+.loc-change-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(123,175,212,0.08);
+    border: 1px solid rgba(123,175,212,0.2);
+    border-radius: 10px;
+    padding: 4px 8px;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
 
 .close-btn {
     background: transparent;
@@ -103,6 +164,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
+    padding: 0 22px;
 }
 
 .cat-btn-main {
@@ -110,12 +172,12 @@
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    padding: 14px 8px;
-    border-radius: 14px;
+    padding: 14px 6px;
+    border-radius: 16px 4px 16px 16px;
     border: 1.5px solid var(--muted);
     background: var(--bg2);
     color: var(--cream);
-    min-height: 80px;
+    min-height: 72px;
     cursor: pointer;
     transition: all .15s;
 }
@@ -124,7 +186,6 @@
 .cat-btn-main.selected {
     border-color: var(--cat-color);
     background-color: color-mix(in srgb, var(--cat-color) 15%, transparent);
-    /* color: var(--cat-color); */
 }
 
 .cat-btn-main .cat-btn-icon {

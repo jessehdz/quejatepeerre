@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CATEGORIES } from '../lib/constants';
 import { submitReport } from '../lib/api';
 import './ReportForm.css';
-import { IoCloseCircle, IoCamera } from "react-icons/io5";
+import { IoCloseCircle, IoCamera, IoCheckmarkSharp } from "react-icons/io5";
 
 /* ReportForm - A form component for submitting new reports.
 Props:
@@ -161,7 +161,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                 </div>
                     
                 {/* municipality and exact location display - auto-populated (read only) */}
-                <div className='form-field'>
+                {/* <div className='form-field'>
                     <label className='form-label' htmlFor="formMunicipality">Municipio:</label>
                     <div className='form-static'>
                         {municipality || 'Toca el mapa para seleccionar ubicación'}
@@ -172,6 +172,16 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                     <div className='form-static-loc'>
                         {exactLocation || 'Toca el mapa para seleccionar ubicación'}
                     </div>
+                </div> */}
+
+                <div className='loc-block'>
+                    <div className='loc-label'>UBICACIÓN</div>
+                    <div className='loc-muni'>{municipality || 'Toca el mapa para seleccionar ubicación'}</div>
+                    <div className='loc-exact'>{exactLocation || ''}</div>
+                    <div className='loc-badge'>GPS <IoCheckmarkSharp /></div>
+                    <button className='loc-change-btn' >
+                        Corregir ubicación
+                    </button>
                 </div>
                 
                 {/* main category picker */}
