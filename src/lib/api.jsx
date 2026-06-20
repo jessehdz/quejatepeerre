@@ -1,25 +1,56 @@
 import { supabase } from "./supabase";
 
+const MAX_PHOTO_SIZE = 10 * 1024 * 1024; // 10 MB
+const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+
+// validatePhoto - client-side photo check before upload. Returns an error message string or null.
+export function validatePhoto(file) {
+    if (file.size > MAX_PHOTO_SIZE) {
+        return `La foto es demasiado grande (${(file.size / 1024 / 1024).toFixed(1)} MB). El límite es 10 MB.`;
+    }
+    // Allow all common image types; the type can be empty for HEIC on some devices
+    if (file.type && !ALLOWED_PHOTO_TYPES.includes(file.type.toLowerCase())) {
+        return 'Solo se aceptan fotos JPG, PNG, WEBP o HEIC (iPhone).';
+    }
+    return null;
+}
+
+function makeError(message, original, source) {
+    const err = new Error(message);
+    err.userMessage = message;
+    err.originalError = original;
+    err.source = source; // 'photo' | 'submit'
+    return err;
+}
+
 // uploadImage - uploads an image file to Supabase storage and returns the public URL
 export async function uploadImage(file) {
     const ext = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const { error } = await supabase.storage
         .from('report-images')
-        .upload(fileName, file, {
-            cacheControl: '3600',
-            upsert: false
-        });
+        .upload(fileName, file, { cacheControl: '3600', upsert: false });
+
     if (error) {
-        console.error("Error uploading image:", error);
-        throw error;
+        console.error("StorageApiError uploading image:", error);
+        const msg = error.message?.toLowerCase() ?? '';
+        const status = String(error.statusCode ?? '');
+        if (status === '413' || msg.includes('too large') || msg.includes('payload')) {
+            throw makeError('La foto es demasiado grande. El límite es 10 MB.', error, 'photo');
+        }
+        if (status === '415' || msg.includes('mime') || msg.includes('type')) {
+            throw makeError('Tipo de archivo no permitido. Solo se aceptan fotos JPG, PNG, WEBP o HEIC.', error, 'photo');
+        }
+        if (status === '403' || msg.includes('unauthorized') || msg.includes('security policy')) {
+            throw makeError('Sin permiso para subir fotos. Intenta de nuevo más tarde.', error, 'photo');
+        }
+        if (status === '404' || msg.includes('bucket')) {
+            throw makeError('Error de configuración al subir la foto. Contacta al administrador.', error, 'photo');
+        }
+        throw makeError('Error al subir la foto. Verifica tu conexión e intenta de nuevo.', error, 'photo');
     }
 
-    // store the public URL of the uploaded image to save in the report
-    const { data } = supabase.storage
-        .from('report-images')
-        .getPublicUrl(fileName);
-    
+    const { data } = supabase.storage.from('report-images').getPublicUrl(fileName);
     return data.publicUrl;
 }
 
@@ -30,13 +61,27 @@ export async function submitReport(reportData) {
         .insert(reportData)
         .select()
         .single();
-    
+
     if (error) {
         console.error("Error submitting report:", error);
-        throw error;
+        const msg = error.message?.toLowerCase() ?? '';
+        const code = error.code ?? '';
+        if (code === '23502' || msg.includes('null value')) {
+            throw makeError('Faltan datos requeridos. Revisa todos los campos del formulario.', error, 'submit');
+        }
+        if (code === '23505') {
+            throw makeError('Ya existe un reporte idéntico. Verifica si ya fue enviado.', error, 'submit');
+        }
+        if (code === '42501' || msg.includes('row-level security') || msg.includes('policy')) {
+            throw makeError('Sin permiso para enviar reportes ahora mismo. Intenta de nuevo más tarde.', error, 'submit');
+        }
+        if (msg.includes('network') || msg.includes('failed to fetch')) {
+            throw makeError('Sin conexión a internet. Verifica tu red e intenta de nuevo.', error, 'submit');
+        }
+        throw makeError('Error inesperado al enviar el reporte. Por favor intenta de nuevo.', error, 'submit');
     }
-    
-    return data; // return the inserted report data
+
+    return data;
 }
 
 // getReports - returns all open reports, newest first (to implement later: filter by municipality and status)

@@ -262,29 +262,45 @@
 }
 
 /* photo upload */
+.photo-upload-group {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
 .photo-upload-btn {
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    width: 100%;
+    gap: 8px;
+    width: 50%;
     padding: 16px;
     border-radius: 12px;
-    border: 1.5px dashed var(--muted);
+    border: 1.5px dashed var(--cel);
     background: transparent;
-    color: var(--muted);
+    color: var(--cel);
     text-transform: uppercase;
-    font-size: 11px;
+    font-size: 12px;
+    font-weight: 700;
     letter-spacing: .1em;
     cursor: pointer;
-    transition: border-color .15s;
+    transition: background .15s, border-color .15s;
 }
 
 .photo-upload-btn:hover {
-    border-color: var(--cel);
+    background: color-mix(in srgb, var(--cel) 8%, transparent);
+}
+
+.photo-upload-label {
     font-size: 12px;
     font-weight: 700;
-    color: var(--cel);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.photo-field-error {
+    margin-top: 6px;
 }
 
 .photo-preview-wrap {

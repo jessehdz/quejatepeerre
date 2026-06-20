@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { CATEGORIES } from '../lib/constants';
-import { submitReport } from '../lib/api';
+import { submitReport, uploadImage, validatePhoto } from '../lib/api';
 import './ReportForm.css';
-import { IoCloseCircle, IoCamera, IoCheckmarkSharp } from "react-icons/io5";
+import { IoCloseCircle, IoCamera, IoImagesOutline, IoCheckmarkSharp } from "react-icons/io5";
 
 /* ReportForm - A form component for submitting new reports.
 Props:
@@ -28,10 +28,11 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
     // submission and validation states
-    const [submitting, setSubmitting] = useState(false); // submission state for showing loading indicator
-    const [submitError, setSubmitError] = useState(null); // error state for submission errors
-    const [errors, setErrors] = useState({}); // validation errors for form fields
-    const [successMessage, setSuccessMessage] = useState(null); // success message after successful submission
+    const [submitting, setSubmitting] = useState(false);
+    const [photoError, setPhotoError] = useState(null); // error specific to image upload
+    const [submitError, setSubmitError] = useState(null); // error specific to report submission
+    const [errors, setErrors] = useState({}); // field-level validation errors
+    const [successMessage, setSuccessMessage] = useState(null);
 
     // subcategory reset when category changes
     function handleCategorySelect(catKey) {
@@ -42,14 +43,25 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
     function handlePhotoChange(e) {
         const file = e.target.files[0];
         if (!file) return;
-        setPhoto(file);
 
-        // create a preview URL for the selected photo
+        const validationError = validatePhoto(file);
+        if (validationError) {
+            setPhotoError(validationError);
+            e.target.value = ''; // reset input so same file can be retried
+            return;
+        }
+
+        setPhotoError(null);
+        setPhoto(file);
         const reader = new FileReader();
-        reader.onloadend = () => {
-            setPhotoPreview(reader.result);
-        };
+        reader.onloadend = () => setPhotoPreview(reader.result);
         reader.readAsDataURL(file);
+    }
+
+    function handleRemovePhoto() {
+        setPhoto(null);
+        setPhotoPreview(null);
+        setPhotoError(null);
     }
 
     // find the selected category object based on the selected category key, used to display category-specific subcategories and colors
@@ -74,25 +86,23 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
     // submit button state - grayed out and unclickable if currently submitting or if validation fails
     const isValid = category && title.trim() && description.trim().length >= 20;
 
-    // handle form submission
     async function handleSubmit() {
-        if (!validate()) return; // if validation fails, do not submit
-        
+        if (!validate()) return;
+
         setSubmitting(true);
+        setPhotoError(null);
         setSubmitError(null);
         setSuccessMessage(null);
 
         try {
             let imageURL = null;
 
-            // upload photo if one is selected
             if (photo) {
                 setUploadingPhoto(true);
-                imageURL = await uploadPhoto(photo);
+                imageURL = await uploadImage(photo);
                 setUploadingPhoto(false);
             }
 
-            // success or error response when submitting the report data to the API
             await submitReport({
                 category,
                 subcategory: subcategory || null,
@@ -103,22 +113,24 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                 municipality: municipality || 'Puerto Rico',
                 exact_location: exactLocation || null,
                 image_url: imageURL,
-                draft: false, // all reports are *currently* submitted as final, not drafts
-                status: 'open', // new reports start with 'open' status
-                vote_count: 0, // initial vote count for new reports
+                draft: false,
+                status: 'open',
+                vote_count: 0,
             });
 
-            // successful submission
             setSuccessMessage(true);
-            
+
         } catch (error) {
-            // error during submission
-            console.error("Error submitting report:", error);
-            setSubmitError('Hubo un error al enviar tu reporte. Por favor intenta de nuevo.');
+            console.error("Submission error:", error);
+            if (error.source === 'photo') {
+                setPhotoError(error.userMessage ?? 'Error al subir la foto. Intenta de nuevo.');
+            } else {
+                setSubmitError(error.userMessage ?? 'Error al enviar el reporte. Por favor intenta de nuevo.');
+            }
         } finally {
             setSubmitting(false);
             setUploadingPhoto(false);
-        } 
+        }
     }
 
     if (!isOpen) return null; // don't render anything if the form is not open
@@ -259,24 +271,39 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                     {photoPreview ? (
                         <div className='photo-preview-wrap'>
                             <img src={photoPreview} alt='Evidencia' className='photo-preview' />
-                            <button className='remove-photo-btn' onClick={() => {setPhoto(null); setPhotoPreview(null);}}>
+                            <button className='remove-photo-btn' onClick={handleRemovePhoto}>
                                 <IoCloseCircle size={28} />
                             </button>
-                        </div> 
+                        </div>
                     ) : (
-                    <label className='photo-upload-btn'>
-                        {/* show file input if no photo selected */}
-                        <IoCamera className='photo-upload-icon' size={24} color="var(--cel)" /> 
-                        <input 
-                            type='file' 
-                            accept='image/*' 
-                            capture='environment' // opens camera on mobile if supported
-                            onChange={handlePhotoChange} 
-                            // disabled={uploadingPhoto}
-                            style={{ display: 'none' }}
-                        />
-                    </label>
+                        <div className='photo-upload-group'>
+                            {/* primary: open camera directly */}
+                            <label className='photo-upload-btn camera-btn'>
+                                <IoCamera className='photo-upload-icon' size={20} />
+                                <span className='photo-upload-label'>Tomar foto</span>
+                                <input
+                                    type='file'
+                                    accept='image/*'
+                                    capture='environment'
+                                    onChange={handlePhotoChange}
+                                    style={{ display: 'none' }}
+                                />
+                            </label>
+                            {/* secondary: pick from gallery */}
+                            <label className='photo-upload-btn gallery-btn'>
+                                <IoImagesOutline size={18} />
+                                <span className='photo-upload-label'>Elegir de galería</span>
+                                <input
+                                    type='file'
+                                    accept='image/*'
+                                    onChange={handlePhotoChange}
+                                    style={{ display: 'none' }}
+                                />
+                            </label>
+                        </div>
                     )}
+
+                    {photoError && <p className='form-error photo-field-error'>{photoError}</p>}
 
                     <p className='photo-note'>
                         La foto debe mostrar claramente el problema. Se usará como evidencia para que las autoridades tomen acción. No subas fotos de personas o información privada.
