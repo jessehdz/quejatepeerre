@@ -1,4 +1,4 @@
-/* app shell */
+/* ── APP SHELL ──────────────────────────────────────────────────────── */
 .app {
     width: 100%;
     min-height: 100vh;
@@ -7,14 +7,38 @@
     flex-direction: column;
 }
 
+/* ── MOBILE MAP ─────────────────────────────────────────────────────── */
+.mobile-map {
+    display: block;
+}
+
+/* ── DESKTOP LAYOUT ─────────────────────────────────────────────────── */
+.desktop-layout {
+    display: none;
+}
+
+/* ── STATS BANNER — desktop only ────────────────────────────────────── */
+.stats-banner {
+    display: none;
+}
+
+/* ── MOBILE CONTENT AREA ────────────────────────────────────────────── */
 .content {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: 86px; /* bottom-nav clearance on mobile */
+    padding-bottom: 86px;
 }
 
-/* municipality and exact location pin styling - below map after pin drop */
-.muni-pin{
+/* ── PLACEHOLDER PANELS (datos / más tabs — not yet implemented) ───── */
+.placeholder-panel {
+    color: var(--muted);
+    padding: 16px;
+    font-family: var(--font_main);
+    font-size: 11px;
+}
+
+/* ── MUNI PIN CALLOUT ───────────────────────────────────────────────── */
+.muni-pin {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -59,37 +83,174 @@
     align-items: center;
 }
 
-
-/* tablet (≥640px) */
+/* ── TABLET ≥640px ──────────────────────────────────────────────────── */
 @media (min-width: 640px) {
     .content {
         padding-bottom: 96px;
     }
 }
 
-/* desktop (≥1024px) */
+/* ── DESKTOP ≥1024px ────────────────────────────────────────────────── */
 @media (min-width: 1024px) {
+
+    /* Lock the app to the viewport — panels scroll internally */
     .app {
-        max-width: 1280px;
-        margin: 0 auto;
+        height: 100vh;
+        min-height: unset;
+        overflow: hidden;
     }
 
-    .content {
-        padding-bottom: 0; /* bottom nav becomes a sidebar or top nav */
-        display: grid;
-        grid-template-columns: 1fr 420px; /* map | feed panel */
+    .mobile-map { display: none; }
+    .content    { display: none; }
+
+    /* ── STATS BANNER ── */
+    .stats-banner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         gap: 0;
+        background: var(--tile);
+        border-bottom: 2px solid var(--cel);
+        height: 48px;
+        flex-shrink: 0;
         overflow: hidden;
+        padding: 0;
+    }
+
+    .stats-banner-prefix {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        padding: 0 20px 0 0;
+        margin-right: 4px;
+        border-right: 1px solid var(--border2);
+    }
+
+    .stats-banner-prefix-text {
+        font-family: var(--font_main);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--cel);
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .stats-banner-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 24px;
+        border-right: 1px solid var(--border2);
+        height: 100%;
+        white-space: nowrap;
+    }
+
+    .stats-banner-item:last-child {
+        border-right: none;
+    }
+
+    .stats-banner-label {
+        font-family: var(--font_main);
+        font-size: 9px;
+        color: var(--muted);
+        letter-spacing: .14em;
+        text-transform: uppercase;
+    }
+
+    .stats-banner-value {
+        font-family: var(--font_main);
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--cream);
+        letter-spacing: .04em;
+    }
+
+    .stats-banner-value.bad  { color: var(--crisis); }
+    .stats-banner-value.good { color: var(--cel); }
+
+    /* ── DESKTOP LAYOUT ── */
+    .desktop-layout {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    /* ── LEFT PANEL — leaderboard (1/3) — independent scroll ── */
+    .desktop-left {
+        width: 33.333%;
+        flex-shrink: 0;
+        background: var(--bg2);
+        border-right: 1px solid var(--border);
+        overflow-y: scroll;
+        padding: 18px 20px 88px;
+        min-height: 0;
+    }
+
+    .desktop-left::-webkit-scrollbar       { width: 5px; }
+    .desktop-left::-webkit-scrollbar-track { background: var(--bg2); }
+    .desktop-left::-webkit-scrollbar-thumb { background: var(--tile2); border-radius: 3px; }
+    .desktop-left::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    .desktop-panel-label {
+        font-family: var(--font_main);
+        font-size: 9px;
+        letter-spacing: .14em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .desktop-panel-sub {
+        font-family: var(--font_main);
+        font-size: 11px;
+        color: var(--muted2);
+        letter-spacing: .04em;
+        margin-bottom: 16px;
+    }
+
+    /* ── RIGHT COLUMN (2/3) ── */
+    .desktop-right {
+        flex: 1;
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    /* Single scrollable container for the entire right column.
+       Map is just the first child — it scrolls with the cards. */
+    .desktop-feed {
+        height: 100%;
+        overflow-y: auto;
+        min-height: 0;
+        padding-bottom: 88px;      /* clear fixed bottom nav */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .desktop-feed::-webkit-scrollbar       { width: 3px; }
+    .desktop-feed::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    /* ── MAP inline — wider than cards but not full width ── */
+    .desktop-map-inline {
+        width: 92%;
+        aspect-ratio: 16 / 9;
+        border-radius: 18px;
+        overflow: hidden;
+        flex-shrink: 0;
+        margin: 16px 0 0;
+        border: 1px solid var(--border2);
+    }
+
+    /* muni-pin callout sits at 92% to stay aligned under the map */
+    .desktop-feed .muni-pin {
+        width: 92%;
+        margin: 8px 0 4px;
     }
 }
 
-/* wide desktop (≥1440px) */
+/* ── WIDE DESKTOP ≥1440px ───────────────────────────────────────────── */
 @media (min-width: 1440px) {
-    .app {
-        max-width: 1440px;
-    }
-
-    .content {
-        grid-template-columns: 1fr 480px;
-    }
+    .desktop-left { width: 30%; }
 }
