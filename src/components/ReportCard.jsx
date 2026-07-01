@@ -1,76 +1,177 @@
-import { useState } from "react";
-import { CATEGORIES } from "../lib/constants";
-import { ChevronUp, Icon, TrafficCone } from 'lucide-react';
-import { FaMapPin } from "react-icons/fa6";
+import { useState } from 'react';
+import { CATEGORIES } from '../lib/constants';
+import { TiArrowSortedUp } from "react-icons/ti";
+import { MapPin } from 'lucide-react';
 import './ReportCard.css';
 
-/*
-  ReportCard — the core visual unit of QuéjatePeErre.
+// ── STATUS TRANSLATION ──────────────────────────────────────────────────────
+// Supabase stores status in English lowercase ('open', 'in_progress', 'resolved').
+// We display them in Spanish uppercase (status pill on report cards).
+const STATUS_MAP = {
+    'open':           'ABIERTO',
+    'in_progress':    'EN REPARACIÓN',
+    'resolved':       'RESUELTO',
+    // already-translated values pass through unchanged
+    'ABIERTO':        'ABIERTO',
+    'EN REPARACIÓN':  'EN REPARACIÓN',
+    'RESUELTO':       'RESUELTO',
+};
 
-  Every report in the app is displayed using this component.
-  It takes data as props and renders a card with:
-  - A colored tile at the top (based on category — what kind of problem)
-  - A severity pill in the top-right corner (how neglected is it)
-  - The title and municipality in the card body
-  - An upvote button that increments once per session
-  
-  PROPS:
-    category
-    subcategory
-    icon
-    label 
-    severity — 'CRISIS' | 'VERGÜENZA' | 'IGNORADO' | 'NUEVO'
-    title — the report title text
-    municipality — 'San Juan', 'Bayamón', etc.
-    daysOpen — how many days since this was reported
-    voteCount — how many "Yo También" votes
-    onClick — optional: function called when the card is tapped
-*/
+const STATUS_BG = {
+    'ABIERTO':        'rgba(170,34,20,0.85)',
+    'EN REPARACIÓN':  'rgba(176,86,14,0.85)',
+    'RESUELTO':       'rgba(42,96,42,0.85)',
+};
 
-function ReportCard() {
-   
+// ── DAYS CALCULATION ────────────────────────────────────────────────────────
+// Supabase stores created_at as an ISO timestamp.
+// We calculate days open from that — there is no daysOpen column.
+function calcDaysOpen(createdAt) {
+    if (!createdAt) return 0;
+    const ms = new Date() - new Date(createdAt);
+    return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
+}
+
+function daysColor(days, resolved) {
+    if (resolved) return '#72C472';
+    if (days >= 90) return '#FF7A5A';
+    if (days >= 30) return '#F0BB5A';
+    return '#F0F0E8';
+}
+
+// ── PHOTO FALLBACKS ─────────────────────────────────────────────────────────
+const PHOTO_FALLBACK = {
+    infrastructure: 'radial-gradient(ellipse at 40% 50%, #1A1410 0%, #100E0A 55%, #07060A 100%)',
+    security:       'radial-gradient(ellipse at 30% 40%, #1A0808 0%, #100404 55%, #080000 100%)',
+    environment:    'radial-gradient(ellipse at 55% 65%, #1E2A14 0%, #141C0C 50%, #0A100A 100%)',
+    community:      'radial-gradient(ellipse at 45% 55%, #1E1808 0%, #14100A 50%, #0A0806 100%)',
+    services:       'radial-gradient(ellipse at 50% 60%, #0E2A38 0%, #071C2A 50%, #030E18 100%)',
+    other:          'radial-gradient(ellipse at 50% 50%, #1A1A1A 0%, #0E0E0E 100%)',
+};
+
+function ReportCard({ report, onClick, onDetails }) {
+    const {
+        id,
+        category   = 'infrastructure',
+        subcategory,
+        municipality,
+        status     = 'open',
+        vote_count = 0,
+        image_url,
+        created_at,
+    } = report;
+
+    const [votes, setVotes] = useState(vote_count);
+    const [voted, setVoted] = useState(false);
+
+    // Translate Supabase status → Spanish display label
+    const statusLabel = STATUS_MAP[status] || 'ABIERTO';
+    const statusBg    = STATUS_BG[statusLabel] || STATUS_BG['ABIERTO'];
+    const resolved    = statusLabel === 'RESUELTO';
+
+    // Calculate days from Supabase created_at timestamp
+    const daysOpen = calcDaysOpen(created_at);
+    const daysNum  = resolved ? '✓' : String(daysOpen);
+    const daysWord = resolved
+        ? 'RESUELTO'
+        : daysOpen === 1
+            ? 'DÍA ABIERTO'
+            : 'DÍAS ABIERTO';
+    const daysClr = daysColor(daysOpen, resolved);
+
+    const catData = CATEGORIES.find(c => c.key === category) || CATEGORIES[0];
+    const CatIcon = catData.icon;
+
+    const photoBg = image_url
+        ? `url(${image_url}) center/cover no-repeat`
+        : (PHOTO_FALLBACK[category] || PHOTO_FALLBACK.other);
+
+    const reportNum = id
+        ? `QPR-B26-${String(id).slice(0, 6).toUpperCase()}`
+        : 'QPR-??????';
+
+    function handleVote(e) {
+        e.stopPropagation();
+        if (voted) return;
+        setVotes(v => v + 1);
+        setVoted(true);
+    }
+
     return (
-        <div className="report-card-wrap">
+        <article className="rc-article" onClick={onClick}>
 
-      {/* THE CARD — clip-path cuts the folder tab shape */}
-        <div className="report-card-shape">
+            <div className="rc-photo" style={{ background: photoBg }}>
+                <div className="rc-scrim" />
 
-            {/* TAB — sits at the very top */}
-                <div className="card-tab-space">
-                    <TrafficCone size={14} />
-                <span className="tab-label">INFRAESTRUCTURA</span>
-            </div>
+                {/* TOP ROW: category pill (left) | status badge (right) */}
+                <div className="rc-top-row">
+                    <div className="rc-cat-pill">
+                        <span className="rc-cat-left" style={{ background: catData.color }}>
+                            <span className="rc-cat-icon">{CatIcon && <CatIcon />}</span>
+                            {catData.label.toUpperCase()}
+                        </span>
+                        {subcategory && (
+                            <span className="rc-cat-right">
+                                {subcategory.toUpperCase()}
+                            </span>
+                        )}
+                    </div>
 
-            {/* BODY — photo left, data right */}
-            <div className="card-body">
-                <div className="card-photo">
-                    {/* {image_url
-                        ? <img src={image_url} alt="Evidencia" className="photo-img" />
-                        : <div className="photo-placeholder">🚧</div>
-                    } */}
-                    <div className="photo-overlay">
-                        <p className="overlay-label">DÍAS SIN REPARAR</p>
-                        <p className="overlay-days">214</p>
+                    <span className="rc-status" style={{ background: statusBg }}>
+                        <span className="rc-status-dot" />
+                        {statusLabel}
+                    </span>
+                </div>
+
+                {/* BOTTOM CONTENT */}
+                <div className="rc-bottom">
+
+                    <div className="rc-report-num">{reportNum}</div>
+
+                    <div className="rc-muni-row">
+                        <MapPin size={14} />
+                        {/* <span className="rc-muni-pin" /> */}
+                        <span className="rc-muni">
+                            {municipality ? municipality.toUpperCase() : 'PUERTO RICO'}
+                        </span>
+                    </div>
+
+                    <div className="rc-divider" />
+
+                    <div className="rc-stats">
+
+                        <div className="rc-days">
+                            <span className="rc-days-num" style={{ color: daysClr }}>
+                                {daysNum}
+                            </span>
+                            <span className="rc-days-word">{daysWord}</span>
+                        </div>
+
+                        <div className="rc-stat-divider" />
+
+                        <button
+                            className={`rc-upvote ${voted ? 'voted' : ''}`}
+                            onClick={handleVote}
+                        >
+                            <TiArrowSortedUp />
+                            <span className="rc-vote-count">{votes}</span>
+                        </button>
+
+                        <div style={{ flex: 1 }} />
+
+                        <button
+                            className="rc-details"
+                            onClick={e => { e.stopPropagation(); onDetails?.(report); }}
+                        >
+                            Más detalles →
+                        </button>
+
                     </div>
                 </div>
-                    
-                <div className="card-divider"></div>
-                
-                    <div className="card-data">
-                        <h3 className="card-title">Título del Reporte</h3>
-                        <p className="card-subcategory" style={{ color: CATEGORIES.color}}>HOYO</p>
-                        <p className="card-meta">San Juan • 5 días</p>
-                        <p className="card-exact-loc">Ubicación exacta</p>
-                    </div>
             </div>
 
-        </div>
-
-        {/* SEV PILL — outside the clipped shape so it's visible */}
-        <span className="sev-pill">VERGÜENZA</span>
-
-    </div>
-    )
+        </article>
+    );
 }
 
 export default ReportCard;
