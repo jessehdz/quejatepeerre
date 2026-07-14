@@ -2,6 +2,11 @@
     padding: 14px 22px 18px;
     flex-shrink: 0;
     border-bottom: 1px solid var(--border);
+    /* sticky — stays at top on both mobile and desktop */
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
 }
 
 @media (min-width: 1024px) {

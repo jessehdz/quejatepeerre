@@ -1,4 +1,4 @@
-import { Dot, Star } from 'lucide-react';
+import { Dot, Megaphone } from 'lucide-react';
 import './Header.css';
 
 function Header() {
@@ -6,7 +6,7 @@ function Header() {
         <header className="header">
             <div className="header-top">
                 <div className="logo">
-                    <Star size={14} fill="white" strokeWidth={0} />
+                    <Megaphone size={14} fill="white" strokeWidth={0} />
                     <span>Quéjate<span className='logo-red'>Pe</span><span className='logo-cel-blue'>Erre</span></span>
                 </div>
 

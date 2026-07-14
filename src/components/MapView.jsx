@@ -1,96 +1,151 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import Map, { Marker, Popup } from "react-map-gl/maplibre";
-import { config } from "@maptiler/sdk";
-import "@maptiler/sdk/dist/maptiler-sdk.css";
 import { FaExclamation } from "react-icons/fa";
 import { MdLocationOn } from "react-icons/md";
 import { CATEGORIES } from "../lib/constants";
 import './MapView.css';
 
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY;
-// required by @maptiler/sdk v4+ — must be set before the SDK initializes, otherwise detectStore() returns undefined
-config.apiKey = MAPTILER_KEY;
-
-// dark mode - map style from MapTiler URL
 const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${MAPTILER_KEY}`;
 
-// default map center - centered on Puerto Rico (eventually could be set to user's location if geolocation permission is granted)
+// Island-wide view — shown on first load
 const PR_CENTER = {
-    longitude: -66.5901,
-    latitude: 18.2208,
-    zoom: 8.5,
+    longitude: -66.45,
+    latitude:  18.22,
+    zoom:      8.35,
 };
+
+// Street-level zoom used when GPS resolves or user drops a pin
+const STREET_ZOOM = 15;
 
 const CATEGORY_COLORS = Object.fromEntries(CATEGORIES.map(c => [c.key, c.color]));
 
-/* interactive map view component 
+/*
+  MapView
 
-- onPinDrop: callback function to handle pin drop events, receives { lat, lng } as argument
-- pinnedLocation: { lat, lng } object representing the current pinned location (if any), used to display the pin on the map
-- reports: array of report objects to display on the map as markers
+  Props:
+    onPinDrop:       (lng, lat) => void
+    pinnedLocation:  { lng, lat } | null
+    reports:         report[]
+    flyToLocation:   { lng, lat } | null  — when set, map animates to this point
+                     at street zoom. Passed from App when GPS resolves.
 */
-function MapView({ onPinDrop, pinnedLocation, reports = [] }) {
-// which report's popup is currently open, null if no popup is open
+function MapView({ onPinDrop, pinnedLocation, reports = [], flyToLocation }) {
     const [selectedReport, setSelectedReport] = useState(null);
+    const mapRef = useRef(null);
 
+    // Fly to GPS/pin location at street zoom when flyToLocation changes
+    const prevFlyTo = useRef(null);
+    if (
+        flyToLocation &&
+        mapRef.current &&
+        (
+            !prevFlyTo.current ||
+            prevFlyTo.current.lng !== flyToLocation.lng ||
+            prevFlyTo.current.lat !== flyToLocation.lat
+        )
+    ) {
+        prevFlyTo.current = flyToLocation;
+        mapRef.current.flyTo({
+            center: [flyToLocation.lng, flyToLocation.lat],
+            zoom:   STREET_ZOOM,
+            speed:  1.4,
+            curve:  1.4,
+        });
+    }
+
+    // Fly back to island view when pin is cleared (flyToLocation becomes null)
+    const wasActive = useRef(false);
+    if (!flyToLocation && wasActive.current && mapRef.current) {
+        wasActive.current = false;
+        mapRef.current.flyTo({
+            center: [PR_CENTER.longitude, PR_CENTER.latitude],
+            zoom:   PR_CENTER.zoom,
+            speed:  1.2,
+            curve:  1.4,
+        });
+    }
+    if (flyToLocation) wasActive.current = true;
+
+    // Also fly to pin when user taps the map manually
     const handleMapClick = useCallback((event) => {
-        setSelectedReport(null); // close any open popup when clicking on the map
+        setSelectedReport(null);
         const { lngLat } = event;
-        onPinDrop( lngLat.lng, lngLat.lat );
+        onPinDrop(lngLat.lng, lngLat.lat);
+
+        // Zoom in to the tapped point
+        if (mapRef.current) {
+            mapRef.current.flyTo({
+                center: [lngLat.lng, lngLat.lat],
+                zoom:   STREET_ZOOM,
+                speed:  1.2,
+                curve:  1.2,
+            });
+        }
     }, [onPinDrop]);
 
+    const mappableReports = reports.filter(r => r.lat != null && r.lng != null);
+
     return (
-    <div className="map-view">
-        <Map
-            initialViewState={PR_CENTER}
-            style={{ width: '100%', height: '100%' }}
-            mapStyle={MAP_STYLE}
-            onClick={handleMapClick}
-        >
-                
-                {/* render marker for each existing report */}
-                {reports.map(report => (
-                    <Marker 
-                        key={report.id} 
-                        longitude={report.location.lng}
-                        latitude={report.location.lat}
+        <div className="map-view">
+            <Map
+                ref={mapRef}
+                initialViewState={PR_CENTER}
+                style={{ width: '100%', height: '100%' }}
+                mapStyle={MAP_STYLE}
+                onClick={handleMapClick}
+            >
+                {/* Report markers */}
+                {mappableReports.map(report => (
+                    <Marker
+                        key={report.id}
+                        longitude={report.lng}
+                        latitude={report.lat}
                         anchor="center"
                         onClick={(e) => {
                             e.originalEvent.stopPropagation();
                             setSelectedReport(report);
                         }}
                     >
-                        <FaExclamation className="report-pin" color={CATEGORY_COLORS[report.category]}/>
+                        <FaExclamation
+                            className="report-pin"
+                            color={CATEGORY_COLORS[report.category] || '#7BAFD4'}
+                        />
                     </Marker>
                 ))}
 
-                {/* display popup for selected report */}
+                {/* Popup for tapped report */}
                 {selectedReport && (
                     <Popup
-                        color={CATEGORY_COLORS[selectedReport.category]}
-                        longitude={selectedReport.location.lng}
-                        latitude={selectedReport.location.lat}
+                        longitude={selectedReport.lng}
+                        latitude={selectedReport.lat}
                         anchor="bottom"
                         onClose={() => setSelectedReport(null)}
                     >
                         <div className="report-pin-popup">
                             <h4 className="popup-title">{selectedReport.title}</h4>
-                            <p className="popup-meta">{selectedReport.municipality} | {selectedReport.daysOpen} DÍAS</p>
+                            <p className="popup-meta">
+                                {selectedReport.municipality?.toUpperCase()} · {selectedReport.municipality}
+                            </p>
                         </div>
                     </Popup>
                 )}
 
-            {/* display pin if pinnedLocation is provided */}
-            {pinnedLocation && (
-                <Marker
-                    longitude={pinnedLocation.lng}
-                    latitude={pinnedLocation.lat}
-                    anchor="bottom" >
-                    <div className="map-pin"><MdLocationOn color="red"/></div>
-                </Marker>)}
-        </Map>
-    </div>
-)
+                {/* Drop pin */}
+                {pinnedLocation && (
+                    <Marker
+                        longitude={pinnedLocation.lng}
+                        latitude={pinnedLocation.lat}
+                        anchor="bottom"
+                    >
+                        <div className="map-pin">
+                            <MdLocationOn color="red" size={32} />
+                        </div>
+                    </Marker>
+                )}
+            </Map>
+        </div>
+    );
 }
 
 export default MapView;

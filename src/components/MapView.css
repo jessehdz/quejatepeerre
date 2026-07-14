@@ -1,10 +1,21 @@
 .map-view {
     margin: 15px 22px;
-    height: 360px;
+    height: 360px;          /* mobile fixed height */
     border-radius: 18px;
     overflow: hidden;
     flex-shrink: 0;
     border: 1px solid var(--border2);
+}
+
+/* Desktop: the parent .desktop-map-inline controls size.
+   .map-view just fills it completely. */
+@media (min-width: 1024px) {
+    .map-view {
+        margin: 0;
+        border-radius: 0;
+        border: none;
+        height: 100%;
+    }
 }
 
 .map-pin {
@@ -13,7 +24,6 @@
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
-/* category color pins for each report on map */
 .report-pin {
     width: 20px;
     height: 20px;
@@ -25,7 +35,6 @@
     transform: scale(1.4);
 }
 
-/* popup styles for report details */
 .report-pin-popup {
     padding: 4px 2px;
     max-width: 180px;
