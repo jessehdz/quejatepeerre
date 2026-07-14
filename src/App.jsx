@@ -1,209 +1,235 @@
-import { useState } from "react";
-import { supabase } from './lib/supabase'
+import { useState, useEffect } from "react";
+import { supabase } from './lib/supabase';
+import { useLocation } from './hooks/useLocation';
 import Header from "./components/Header";
 import MapView from "./components/MapView";
 import FeedScreen from "./components/FeedScreen";
-import { getMunicipality, getExactLocation } from "./lib/geocode";
-import { IoCloseCircle } from "react-icons/io5";
 import ReportForm from "./components/ReportForm";
 import BottomNav from "./components/BottomNav";
+import ReportDetail from './components/ReportDetail';
+import Onboarding, { hasSeenOnboarding } from './components/Onboarding';
+import { IoCloseCircle } from "react-icons/io5";
 import './App.css';
-
-
-// sample coordinates for testing report markers
-const SAMPLE_REPORTS = [
-  {
-    id: 1,
-    category: 'pothole',
-    location: { lat: 18.4655, lng: -66.0701 },
-    title: 'Hoyo gigante en la calle principal',
-    municipality: 'San Juan',
-    daysOpen: 5,
-  },
-  {
-    id: 2,
-    category: 'power',
-    location: { lat: 18.2208, lng: -66.5901 },
-    title: 'Apagón desde hace 3 días',
-    municipality: 'Ponce',
-    daysOpen: 3,
-  },
-  {
-    id: 3,
-    category: 'water',
-    location: { lat: 18.0000, lng: -66.5000 },
-    title: 'Fuga de agua afecta varias casas',
-    municipality: 'Mayagüez',
-    daysOpen: 7,
-  },
-];
 
 function App() {
   const [activeTab, setActiveTab] = useState('mapa');
+  const [formOpen, setFormOpen]   = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => !hasSeenOnboarding());
+  const [selectedReport, setSelectedReport] = useState(null);
 
-  // pin location state
-  const [pinnedLocation, setPinnedLocation] = useState(null);
+  // ── LIVE REPORTS FROM SUPABASE ──────────────────────────────────────────────
+  const [reports, setReports]           = useState([]);
+  const [loadingReports, setLoadingReports] = useState(true);
+  const [reportsError, setReportsError] = useState(null);
 
-  // municipality state - will be set after reverse geocoding the pinned location
-  const [municipality, setMunicipality] = useState(null);
-  const [loadingMunicipality, setLoadingMunicipality] = useState(false);
+  useEffect(() => {
+    fetchReports();
 
-  const [exactLocation, setExactLocation] = useState(null);
-  const [loadingExactLocation, setLoadingExactLocation] = useState(false);
+    // Subscribe to new inserts so the feed updates in real time
+    // without the user having to refresh.
+    const channel = supabase
+      .channel('reports-feed')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reports' }, fetchReports)
+      .subscribe();
 
-  // state for report form visibility - toggled when form is opened/closed
-  const [formOpen, setFormOpen] = useState(false);
+    return () => supabase.removeChannel(channel);
+  }, []);
 
-  // handle pin drop event from MapView
-  async function handlePinDrop(lng, lat) {
-    setPinnedLocation({ lng, lat });
-    setLoadingMunicipality(true);
-
+  async function fetchReports() {
     try {
-      const [muniName, exactLoc] = await Promise.all([
-        getMunicipality(lng, lat),
-        getExactLocation(lng, lat)
-      ]);
+      const { data, error } = await supabase
+        .from('reports')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
 
-      setMunicipality(muniName);
-      setExactLocation(exactLoc);
-
-      // switch to feed tab to show reports for the new municipality (todo)
-      // setActiveTab('feed'); 
-    } catch (error) {
-      // API fail or error returned - log error and fallback to default 'Puerto Rico'
-      console.error("Error fetching municipality:", error);
-      setMunicipality('Puerto Rico'); 
-      setExactLocation(null);
+      if (error) throw error;
+      setReports(data || []);
+      setReportsError(null);
+    } catch (err) {
+      console.error('Error fetching reports:', err);
+      setReportsError(err.message);
     } finally {
-      setLoadingMunicipality(false);
-      setLoadingExactLocation(false);
-    }     
-  }
-
-  async function handleFabClick() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const { longitude, latitude } = position.coords;
-        setPinnedLocation({ lng: longitude, lat: latitude });
-
-        const [muniName, exactLoc] = await Promise.all([
-          getMunicipality(longitude, latitude),
-          getExactLocation(longitude, latitude)
-        ]);
-        
-        setMunicipality(muniName);
-        setExactLocation(exactLoc);
-        setFormOpen(true); // open the report form after getting location data
-      },
-        () => {
-          alert("No se pudo obtener la ubicación. Por favor, permita el acceso a la ubicación e intente de nuevo.");
-          setFormOpen(true); // open form anyway so user can manually enter location
-        }
-      );
-    } else {
-      setFormOpen(true); // open form anyway so user can manually enter location
+      setLoadingReports(false);
     }
   }
 
+  // ── LOCATION (pin drop + reverse geocoding) ─────────────────────────────────
+  // All location state lives in this hook — see src/hooks/useLocation.js
+  const {
+    pinnedLocation,
+    municipality,
+    exactLocation,
+    loadingLocation,
+    resolveCoords,
+    clearLocation,
+    requestGeolocation,
+  } = useLocation();
 
+  // Called when the user taps anywhere on the map
+  function handlePinDrop(lng, lat) {
+    resolveCoords(lng, lat);
+  }
+
+  // Called when the user taps the FAB (report button in the nav)
+  function handleFabClick() {
+    requestGeolocation(() => setFormOpen(true));
+  }
+
+  // ── STATS BANNER (desktop only) ─────────────────────────────────────────────
+  const totalOpen     = reports.filter(r => r.status !== 'RESUELTO').length;
+  const totalResolved = reports.filter(r => r.status === 'RESUELTO').length;
+  const totalVotes    = reports.reduce((sum, r) => sum + (r.vote_count || 0), 0);
+
+  // ── SHARED SUBCOMPONENTS ────────────────────────────────────────────────────
+
+  // muniPinCallout — shown below the map when a pin is active.
+  // Defined as a variable so it can be used in both the mobile and desktop layouts
+  // without repeating JSX.
+  const muniPinCallout = pinnedLocation && (
+    <div className="muni-pin">
+      <div className="muni-pin-text">
+        <span className="muni-text">
+          {loadingLocation ? 'Detectando municipio...' : municipality}
+        </span>
+        <span className="exact-loc-text">
+          {loadingLocation ? 'Obteniendo ubicación...' : exactLocation}
+        </span>
+      </div>
+      <button className="remove-pin-btn" onClick={clearLocation} aria-label="Quitar pin">
+        <IoCloseCircle size={28} color="var(--cel)" />
+      </button>
+    </div>
+  );
+
+  const mapProps = {
+    onPinDrop: handlePinDrop,
+    pinnedLocation,
+    reports,
+    flyToLocation: pinnedLocation,  // triggers street-zoom flyTo on GPS or tap
+  };
+
+  // ── RENDER ──────────────────────────────────────────────────────────────────
   return (
     <div className="app">
-      <Header />
 
-      <MapView 
-        onPinDrop={handlePinDrop}
-        pinnedLocation={pinnedLocation}
-        exactLocation={exactLocation}
-        reports={SAMPLE_REPORTS} // pass sample reports to MapView for testing
-      />
-
-      {/* municipality and exact location when pin is dropped */}
-      {pinnedLocation && (
-        <div className="muni-pin">
-          <div className="muni-pin-text"> 
-          {loadingMunicipality ? (
-            <span className="muni-text" style={{ color: 'var(--muted)' }}>
-              Detectando municipio...
-            </span>
-          ) : (
-            <span className="muni-text">
-              {municipality}
-            </span>
-          )}
-          {loadingExactLocation ? (
-            <span className="exact-loc-text">
-              Obteniendo ubicación exacta...
-            </span>
-          ) : (
-            <span className="exact-loc-text">
-              {exactLocation}
-            </span>
-            )}
-            
-          </div>
-          {/* button to remove pin and reset states */}
-          <button 
-            className="remove-pin-btn"
-            onClick={() => {
-              setPinnedLocation(null);
-              setMunicipality(null);
-              setExactLocation(null);
-            }}
-          >
-            <IoCloseCircle size={28} color="var(--cel)" />
-          </button>
-        </div>
+      {/* ReportDetail — full-page overlay when Más detalles is tapped */}
+      {selectedReport && (
+        <ReportDetail
+          report={selectedReport}
+          onBack={() => setSelectedReport(null)}
+          onUpdate={(updated) => {
+            setSelectedReport(updated);
+            setReports(prev => prev.map(r => r.id === updated.id ? updated : r));
+          }}
+        />
       )}
 
-      {/* content placeholder */}
-      <div className="content">
-        <p style={{ color: 'var(--muted)', padding: 16, fontFamily: 'Electrolize, monospace', fontSize: 11 }}>Component Placeholder -- active tab: {activeTab}</p>
-        
-        {/* conditional rendering of feed screen */}
-        {(activeTab === 'mapa' || activeTab === 'feed') && (<FeedScreen />)}
-        
-        {/* details page placeholder */}
-        {activeTab === 'datos' && (
-          <div style={{ color: 'var(--muted)', padding: 16, fontFamily: 'Electrolize, monospace', fontSize: 11 }}>
-            <h2>Dashboard de Municipios</h2>
-            <p>Aquí se mostrarán los reportes completos del municipio seleccionado.</p>
+      {/* Onboarding — shown once on first visit, never again */}
+      {showOnboarding && (
+        <Onboarding onDone={() => setShowOnboarding(false)} />
+      )}
+      <Header />
+
+      {/* Stats ticker — desktop only (hidden via CSS on mobile) */}
+      <div className="stats-banner">
+        <div className="stats-banner-prefix">
+          <span className="stats-banner-prefix-text">🇵🇷 Puerto Rico:</span>
+        </div>
+        <div className="stats-banner-item">
+          <span className="stats-banner-label">Reportes activos</span>
+          <span className={`stats-banner-value ${totalOpen > 0 ? 'bad' : 'good'}`}>
+            {loadingReports ? '—' : totalOpen.toLocaleString()}
+          </span>
+        </div>
+        <div className="stats-banner-item">
+          <span className="stats-banner-label">Resueltos</span>
+          <span className="stats-banner-value good">
+            {loadingReports ? '—' : totalResolved.toLocaleString()}
+          </span>
+        </div>
+        <div className="stats-banner-item">
+          <span className="stats-banner-label">Yo También</span>
+          <span className="stats-banner-value">
+            {loadingReports ? '—' : totalVotes.toLocaleString()}
+          </span>
+        </div>
+        <div className="stats-banner-item">
+          <span className="stats-banner-label">Total reportes</span>
+          <span className="stats-banner-value">
+            {loadingReports ? '—' : reports.length.toLocaleString()}
+          </span>
+        </div>
+      </div>
+
+      {/* ── MOBILE: map stacked above scrollable feed ── */}
+      <div className="mobile-map">
+        <MapView {...mapProps} />
+        {muniPinCallout}
+      </div>
+
+      {/* ── DESKTOP: leaderboard left (1/3) | map + feed right (2/3) ── */}
+      <div className="desktop-layout">
+
+        <aside className="desktop-left">
+          <p className="desktop-panel-label">PEORES MUNICIPIOS · PR</p>
+          <p className="desktop-panel-sub">
+            {loadingReports ? 'Cargando...' : `${reports.length} reportes activos`}
+          </p>
+          {/* LeaderboardPanel — coming soon */}
+        </aside>
+
+        <div className="desktop-right">
+          <div className="desktop-feed">
+            <div className="desktop-map-inline">
+              <MapView {...mapProps} />
+            </div>
+            {muniPinCallout}
+            <FeedScreen reports={reports} loading={loadingReports} error={reportsError} onDetails={setSelectedReport} />
           </div>
-        )}
-        
-        {/* more/menu page placeholder */}
-        {activeTab === 'más' && (
-          <div style={{ color: 'var(--muted)', padding: 16, fontFamily: 'Electrolize, monospace', fontSize: 11 }}>
-            <h2>Mas Detalles</h2>
-            <p>Aquí se mostrarán más información sobre el municipio y sus reportes.</p>
-          </div>
-        )}
+        </div>
 
       </div>
-      
-      {/* nav updates state and button highlight when clicked */}
+
+      {/* ── MOBILE tab content ── */}
+      <div className="content">
+        {(activeTab === 'mapa' || activeTab === 'feed') && (
+          <FeedScreen reports={reports} loading={loadingReports} error={reportsError} onDetails={setSelectedReport} />
+        )}
+        {activeTab === 'datos' && (
+          <div className="placeholder-panel">
+            <h2>Dashboard de Municipios</h2>
+            <p>Próximamente.</p>
+          </div>
+        )}
+        {activeTab === 'más' && (
+          <div className="placeholder-panel">
+            <h2>Más</h2>
+          </div>
+        )}
+      </div>
+
       <BottomNav
         activeTab={activeTab}
         onTabChange={(tab) => {
-          if (tab === 'report') {
-            handleFabClick(); // get geolocation, then open the report form
-          } else {
-            setActiveTab(tab); // switch tabs for other buttons
-          }
-        }} />
-      
-      {/* report form - opens when FAB is clicked, receives location and municipality as props */}
-      <ReportForm 
+          if (tab === 'report') handleFabClick();
+          else setActiveTab(tab);
+        }}
+      />
+
+      <ReportForm
         isOpen={formOpen}
         onClose={() => setFormOpen(false)}
         lng={pinnedLocation?.lng}
         lat={pinnedLocation?.lat}
         exactLocation={exactLocation}
         municipality={municipality}
+        onRequestGps={requestGeolocation}
+        reports={reports}
         onSubmit={() => {
           setFormOpen(false);
-          setPinnedLocation(null);
-          setMunicipality(null);
+          clearLocation();
+          fetchReports();
         }}
       />
     </div>

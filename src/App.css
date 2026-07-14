@@ -37,8 +37,8 @@
     font-size: 11px;
 }
 
-/* ── MUNI PIN CALLOUT ───────────────────────────────────────────────── */
-.muni-pin {
+/* municipality and exact location pin styling - below map after pin drop */
+.muni-pin{
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -235,6 +235,7 @@
     /* ── MAP inline — wider than cards but not full width ── */
     .desktop-map-inline {
         width: 92%;
+        max-width: 960px;
         aspect-ratio: 16 / 9;
         border-radius: 18px;
         overflow: hidden;
@@ -246,6 +247,7 @@
     /* muni-pin callout sits at 92% to stay aligned under the map */
     .desktop-feed .muni-pin {
         width: 92%;
+        max-width: 960px;
         margin: 8px 0 4px;
     }
 }
