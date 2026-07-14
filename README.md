@@ -1,70 +1,119 @@
-# Getting Started with Create React App
+# QuéjatePeErre
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A civic reporting platform for Puerto Rico. Citizens can pin problems on a map, categorize them, and submit anonymous reports — potholes, power outages, water issues, safety concerns, and more.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## Stack
 
-### `npm start`
+| Layer | Technology |
+|---|---|
+| Framework | React 19 + Vite 8 |
+| Map | MapLibre GL via react-map-gl, tiles from MapTiler |
+| Backend | Supabase (Postgres + Storage) |
+| Styling | Plain CSS with CSS custom properties (no Tailwind) |
+| Testing | Vitest + React Testing Library |
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Getting Started
 
-### `npm test`
+### 1. Clone and install
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+git clone <repo-url>
+cd quejatepeerre
+npm install
+```
 
-### `npm run build`
+### 2. Set up environment variables
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Create a `.env` file at the project root (it's already in `.gitignore`):
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_MAPTILER_KEY=your_maptiler_api_key
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- **Supabase**: create a free project at [supabase.com](https://supabase.com)
+- **MapTiler**: get a free API key at [maptiler.com](https://maptiler.com)
 
-### `npm run eject`
+### 3. Run
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+npm start        # dev server at localhost:3000
+npm test         # run tests in watch mode
+npm run build    # production build → /dist
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Project Structure
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```
+src/
+  main.jsx              # app entry point — SDK config, React root
+  App.jsx               # root component — routing state, layout
+  index.css             # global CSS variables and base styles
 
-## Learn More
+  components/           # UI components (each paired with a .css file)
+    BottomNav.jsx       # tab bar + FAB
+    FeedScreen.jsx      # scrollable report list
+    Header.jsx          # top bar with logo
+    MapView.jsx         # interactive map with report markers
+    ReportCard.jsx      # single report card in the feed
+    ReportForm.jsx      # slide-up form for submitting a new report
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+  hooks/
+    useLocation.js      # geolocation + reverse geocoding state logic
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+  lib/                  # pure utility modules (no React)
+    api.js              # Supabase query functions
+    constants.js        # category definitions, severity colors
+    geocode.js          # MapTiler reverse geocoding helpers
+    supabase.js         # Supabase client initialization
 
-### Code Splitting
+  data/
+    sampleReports.js    # dev-only mock data (same shape as DB rows)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+  __tests__/            # Vitest test files (mirrors src/ structure)
+```
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Supabase Schema
 
-### Making a Progressive Web App
+### `reports` table
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | primary key, auto-generated |
+| `category` | text | matches a key in `CATEGORIES` (e.g. `'infrastructure'`) |
+| `subcategory` | text | nullable |
+| `title` | text | max 80 chars |
+| `description` | text | max 500 chars |
+| `lat` | float8 | latitude |
+| `lng` | float8 | longitude |
+| `municipality` | text | reverse-geocoded from coordinates |
+| `exact_location` | text | nullable, street-level address |
+| `image_url` | text | nullable, public URL from Supabase Storage |
+| `status` | text | `'open'` \| `'resolved'` |
+| `vote_count` | int4 | default 0 |
+| `draft` | bool | default false |
+| `created_at` | timestamptz | auto-generated |
 
-### Advanced Configuration
+### Storage bucket
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- Bucket name: `report-images`
+- Access: public read
 
-### Deployment
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Environment Variables Reference
 
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+| Variable | Where to get it |
+|---|---|
+| `VITE_SUPABASE_URL` | Supabase dashboard → Project Settings → API |
+| `VITE_SUPABASE_ANON_KEY` | Supabase dashboard → Project Settings → API |
+| `VITE_MAPTILER_KEY` | maptiler.com → Account → API keys |
