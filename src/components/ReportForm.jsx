@@ -1,329 +1,433 @@
-import { useState } from 'react';
-import { CATEGORIES } from '../lib/constants';
+import { useState, useMemo } from 'react';
+import { CATEGORIES, CONTEXT_CHIPS, generateTitle, generateHashtags } from '../lib/constants';
 import { submitReport, uploadImage, validatePhoto } from '../lib/api';
+import { getMunicipality, getExactLocation, forwardGeocode } from '../lib/geocode';
 import './ReportForm.css';
-import { IoCloseCircle, IoCamera, IoImagesOutline, IoCheckmarkSharp } from "react-icons/io5";
+import { IoCloseCircle, IoCamera, IoImagesOutline, IoLocationSharp } from 'react-icons/io5';
 
-/* ReportForm - A form component for submitting new reports.
-Props:
-- isOpen: boolean - whether the form is currently open/visible
-- onClose: function() - callback to close the form
-- lng: longitude coordinates of the report location
-- lat: latitude coordinates of the report location
-- municipality: string - the name of the municipality (for display)
-- onSubmit: function(reportData) - callback to handle form submission, receives the report data object
-*/
+function distanceMetres(lat1, lng1, lat2, lng2) {
+    const R = 6371000;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+const NEARBY_METRES = 30;
 
-function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, onSubmit }) {
+function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, onSubmit, onRequestGps, reports = [] }) {
 
-    // category and subcategory states
-    const [category, setCategory] = useState(null); // category selection
-    const [subcategory, setSubcategory] = useState(null); // subcategory selection
+    // ── LOCATION ───────────────────────────────────────────────────
+    const [editingLoc, setEditingLoc]       = useState(false);
+    const [locQuery, setLocQuery]           = useState('');
+    const [locLoading, setLocLoading]       = useState(false);
+    const [locError, setLocError]           = useState(null);
+    const [gpsLoading, setGpsLoading]       = useState(false);
+    const [overrideLng, setOverrideLng]     = useState(null);
+    const [overrideLat, setOverrideLat]     = useState(null);
+    const [overrideMuni, setOverrideMuni]   = useState(null);
+    const [overrideExact, setOverrideExact] = useState(null);
 
-    // form input states
-    const [title, setTitle] = useState(''); // report title input text
-    const [description, setDescription] = useState(''); // report description input textarea
-    const [photo, setPhoto] = useState(null); 
-    const [photoPreview, setPhotoPreview] = useState(null);
-    const [uploadingPhoto, setUploadingPhoto] = useState(false);
+    const resolvedLng   = overrideLng   ?? lng;
+    const resolvedLat   = overrideLat   ?? lat;
+    const resolvedMuni  = overrideMuni  ?? municipality;
+    const resolvedExact = overrideExact ?? exactLocation;
 
-    // submission and validation states
-    const [submitting, setSubmitting] = useState(false);
-    const [photoError, setPhotoError] = useState(null); // error specific to image upload
-    const [submitError, setSubmitError] = useState(null); // error specific to report submission
-    const [errors, setErrors] = useState({}); // field-level validation errors
-    const [successMessage, setSuccessMessage] = useState(null);
+    const nearbyReports = useMemo(() => {
+        if (!resolvedLat || !resolvedLng) return [];
+        return reports.filter(r => r.lat && r.lng && distanceMetres(resolvedLat, resolvedLng, r.lat, r.lng) <= NEARBY_METRES);
+    }, [resolvedLat, resolvedLng, reports]);
 
-    // subcategory reset when category changes
-    function handleCategorySelect(catKey) {
-        setCategory(catKey);
-        setSubcategory(null); 
+    const [nearbyDismissed, setNearbyDismissed] = useState(false);
+    const showNearby = nearbyReports.length > 0 && !nearbyDismissed;
+
+    async function handleGpsInForm() {
+        if (!navigator.geolocation) { alert('GPS no disponible.'); return; }
+        setGpsLoading(true);
+        setNearbyDismissed(false);
+        navigator.geolocation.getCurrentPosition(
+            async ({ coords: { longitude, latitude } }) => {
+                try {
+                    const [muni, exact] = await Promise.all([getMunicipality(longitude, latitude), getExactLocation(longitude, latitude)]);
+                    setOverrideLng(longitude); setOverrideLat(latitude);
+                    setOverrideMuni(muni); setOverrideExact(exact);
+                } catch (e) { console.error(e); }
+                setGpsLoading(false);
+            },
+            () => { alert('No se pudo obtener la ubicaci\u00f3n. Verifica los permisos de GPS.'); setGpsLoading(false); },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
     }
+
+    async function handleLocSearch() {
+        if (!locQuery.trim()) return;
+        setLocLoading(true); setLocError(null); setNearbyDismissed(false);
+        try {
+            const result = await forwardGeocode(locQuery.trim());
+            if (!result) { setLocError('No encontramos esa direcci\u00f3n. Intenta con la calle, barrio, o municipio.'); return; }
+            setOverrideLng(result.lng); setOverrideLat(result.lat);
+            setOverrideMuni(result.municipality); setOverrideExact(result.exactLocation);
+            setEditingLoc(false); setLocQuery('');
+        } catch (e) {
+            setLocError('Error buscando la direcci\u00f3n. Verifica tu conexi\u00f3n e intenta de nuevo.');
+        } finally { setLocLoading(false); }
+    }
+
+    // ── CATEGORY + SUBCATEGORY ─────────────────────────────────────
+    const [category, setCategory]       = useState(null);
+    const [subcategory, setSubcategory] = useState(null);
+    const selectedCat = CATEGORIES.find(c => c.key === category);
+    function handleCategorySelect(key) { setCategory(key); setSubcategory(null); setSelectedChips([]); }
+
+    // ── CONTEXT CHIPS ──────────────────────────────────────────────
+    const [selectedChips, setSelectedChips] = useState([]);
+    function toggleChip(key) {
+        setSelectedChips(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+    }
+
+    // ── AUTO TITLE + DESCRIPTION ───────────────────────────────────
+    const autoTitle = useMemo(() => generateTitle(category, subcategory, resolvedMuni), [category, subcategory, resolvedMuni]);
+    const autoDescription = useMemo(() => {
+        if (!category || !subcategory) return '';
+        return selectedChips.map(k => CONTEXT_CHIPS.find(c => c.key === k)?.text).filter(Boolean).join(' ');
+    }, [category, subcategory, selectedChips]);
+
+    // ── PHOTO ──────────────────────────────────────────────────────
+    const [photo, setPhoto]                   = useState(null);
+    const [photoPreview, setPhotoPreview]     = useState(null);
+    const [uploadingPhoto, setUploadingPhoto] = useState(false);
+    const [photoError, setPhotoError]         = useState(null);
 
     function handlePhotoChange(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const validationError = validatePhoto(file);
-        if (validationError) {
-            setPhotoError(validationError);
-            e.target.value = ''; // reset input so same file can be retried
-            return;
-        }
-
-        setPhotoError(null);
-        setPhoto(file);
-        const reader = new FileReader();
-        reader.onloadend = () => setPhotoPreview(reader.result);
-        reader.readAsDataURL(file);
+        const file = e.target.files[0]; if (!file) return;
+        const err = validatePhoto(file); if (err) { setPhotoError(err); e.target.value = ''; return; }
+        setPhotoError(null); setPhoto(file);
+        const reader = new FileReader(); reader.onloadend = () => setPhotoPreview(reader.result); reader.readAsDataURL(file);
     }
+    function handleRemovePhoto() { setPhoto(null); setPhotoPreview(null); setPhotoError(null); }
 
-    function handleRemovePhoto() {
-        setPhoto(null);
-        setPhotoPreview(null);
-        setPhotoError(null);
-    }
+    // ── SUBMISSION ─────────────────────────────────────────────────
+    const [submitting, setSubmitting]         = useState(false);
+    const [submitError, setSubmitError]       = useState(null);
+    const [success, setSuccess]               = useState(false);
+    const [savedImageURL, setSavedImageURL]   = useState(null);
+    const [errors, setErrors]                 = useState({});
 
-    // find the selected category object based on the selected category key, used to display category-specific subcategories and colors
-    const selectedCategory = CATEGORIES.find(c => c.key === category);
+    const isValid = resolvedLat && category && subcategory && selectedChips.length > 0;
 
-    // input field validation
     function validate() {
-        const newErrors = {};
-        // category must be selected
-        if (!category) newErrors.category = 'Selecciona una categoría.';
-        // if the selected category has subcategories, a subcategory must be selected
-        const hasSubs = selectedCategory?.subcategories.length > 0;
-        if (hasSubs && !subcategory) newErrors.category = 'Selecciona una subcategoría.';
-
-        // title and description must not be empty (removes whitespace)
-        if (!title.trim()) newErrors.title = 'El título no puede estar vacío.';
-        if (!description.trim()) newErrors.description = 'La descripción no puede estar vacía.';
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0; // valid if no errors
+        const e = {};
+        if (!resolvedLat)          e.location    = 'Selecciona una ubicaci\u00f3n.';
+        if (!category)             e.category    = 'Selecciona una categor\u00eda.';
+        if (!subcategory)          e.subcategory = 'Selecciona una subcategor\u00eda.';
+        if (!selectedChips.length) e.chips       = 'Selecciona al menos una descripci\u00f3n.';
+        setErrors(e); return Object.keys(e).length === 0;
     }
-
-    // submit button state - grayed out and unclickable if currently submitting or if validation fails
-    const isValid = category && title.trim() && description.trim().length >= 20;
 
     async function handleSubmit() {
         if (!validate()) return;
-
-        setSubmitting(true);
-        setPhotoError(null);
-        setSubmitError(null);
-        setSuccessMessage(null);
-
+        setSubmitting(true); setSubmitError(null);
         try {
             let imageURL = null;
-
-            if (photo) {
-                setUploadingPhoto(true);
-                imageURL = await uploadImage(photo);
-                setUploadingPhoto(false);
-            }
-
-            await submitReport({
-                category,
-                subcategory: subcategory || null,
-                title: title.trim(),
-                description: description.trim(),
-                lng,
-                lat,
-                municipality: municipality || 'Puerto Rico',
-                exact_location: exactLocation || null,
-                image_url: imageURL,
-                draft: false,
-                status: 'open',
-                vote_count: 0,
-            });
-
-            setSuccessMessage(true);
-
-        } catch (error) {
-            console.error("Submission error:", error);
-            if (error.source === 'photo') {
-                setPhotoError(error.userMessage ?? 'Error al subir la foto. Intenta de nuevo.');
-            } else {
-                setSubmitError(error.userMessage ?? 'Error al enviar el reporte. Por favor intenta de nuevo.');
-            }
-        } finally {
-            setSubmitting(false);
-            setUploadingPhoto(false);
-        }
+            if (photo) { setUploadingPhoto(true); imageURL = await uploadImage(photo); setUploadingPhoto(false); }
+            await submitReport({ category, subcategory, title: autoTitle, description: autoDescription,
+                lng: resolvedLng, lat: resolvedLat, municipality: resolvedMuni || 'Puerto Rico',
+                exact_location: resolvedExact || null, image_url: imageURL,
+                draft: false, status: 'open', vote_count: 0 });
+            setSavedImageURL(imageURL);
+            setSuccess(true);
+        } catch (err) {
+            console.error(err);
+            if (err.source === 'photo') setPhotoError(err.userMessage ?? 'Error al subir la foto.');
+            else setSubmitError(err.userMessage ?? 'Error al enviar el reporte. Intenta de nuevo.');
+        } finally { setSubmitting(false); setUploadingPhoto(false); }
     }
 
-    if (!isOpen) return null; // don't render anything if the form is not open
+    if (!isOpen) return null;
 
-    
+    // ── SUCCESS SCREEN ─────────────────────────────────────────────
+    if (success) {
+        const hashtags   = generateHashtags(category, subcategory, resolvedMuni);
+        const hashStr    = hashtags.join(' ');
+        const dateStr    = new Date().toLocaleDateString('es-PR', { day: 'numeric', month: 'long', year: 'numeric' });
+        const mapsLink   = (resolvedLat && resolvedLng)
+            ? `https://maps.google.com/?q=${resolvedLat},${resolvedLng}`
+            : `https://maps.google.com/?q=${encodeURIComponent(resolvedExact || resolvedMuni || 'Puerto Rico')}`;
 
-    // success screen after successful submission
-    if (successMessage) {
+        const shareMessage = [
+            `\uD83D\uDEA8 ${autoTitle}`,
+            autoDescription || null,
+            ``,
+            `\uD83D\uDCCD ${resolvedExact || resolvedMuni || 'Puerto Rico'}`,
+            `\uD83C\uDFDB Municipio: ${resolvedMuni || 'Puerto Rico'}`,
+            `\uD83D\uDCC5 Reportado: ${dateStr}`,
+            `\uD83D\uDDFA Ver en el mapa: ${mapsLink}`,
+            ``,
+            hashStr,
+            `quejatepeerre.com`,
+        ].filter(l => l !== null).join('\n');
+
+        function handleClose() { onSubmit(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const [copied, setCopied] = useState(false);
+
+        async function handleShare() {
+            if (navigator.share) {
+                try {
+                    if (savedImageURL && navigator.canShare) {
+                        try {
+                            const res  = await fetch(savedImageURL);
+                            const blob = await res.blob();
+                            const file = new File([blob], 'reporte-qpr.jpg', { type: blob.type });
+                            if (navigator.canShare({ files: [file] })) {
+                                await navigator.share({ files: [file], text: shareMessage });
+                                return;
+                            }
+                        } catch (_) { /* photo fetch failed — fall through */ }
+                    }
+                    await navigator.share({ title: autoTitle, text: shareMessage });
+                } catch (_) { /* user cancelled */ }
+            } else {
+                navigator.clipboard.writeText(shareMessage).catch(() => {});
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2500);
+            }
+        }
+
         return (
             <>
-                <div className="form-backdrop" onClick={onSubmit} />
-                <div className='form-panel'>
-                    <div className='form-handle' />
-                    <div className='form-success'>
-                        <div className='success-icon'>✓</div>
-                        <h3 className='success-title'>Tu reporte ha sido enviado</h3>
-                        <p className='success-sub'>Gracias por hacer Puerto Rico mejor.</p>
-                        <button className='close-btn' style={{marginTop: 24}} onClick={onClose}><IoCloseCircle size={28} color="var(--cel)" /></button>
+                <div className="form-backdrop" onClick={handleClose} />
+                <div className="form-panel success-panel">
+                    <div className="form-handle" />
+
+                    <div className="success-logo">
+                        <span className="success-logo-red">Qu\u00e9jate</span>
+                        <span className="success-logo-blue">PeErre</span>
                     </div>
-                    
+
+                    <div className="success-check">\u2713</div>
+                    <h3 className="success-title">Tu reporte fue enviado</h3>
+                    <p className="success-sub">An\u00f3nimo \u00b7 Visible para todos \u00b7 Gratis</p>
+
+                    {savedImageURL && <img src={savedImageURL} alt="Evidencia" className="success-photo" />}
+
+                    <div className="success-summary">
+                        <div className="success-summary-title">{autoTitle}</div>
+                        {autoDescription && <div className="success-summary-desc">{autoDescription}</div>}
+                        <div className="success-summary-meta">
+                            {resolvedExact && <span>\uD83D\uDCCD {resolvedExact}</span>}
+                            <span>\uD83C\uDFDB {resolvedMuni || 'Puerto Rico'}</span>
+                            <span>\uD83D\uDCC5 {dateStr}</span>
+                            <a className="success-maps-link" href={mapsLink} target="_blank" rel="noreferrer">
+                                \uD83D\uDDFA Abrir en Google Maps \u2197
+                            </a>
+                        </div>
+                    </div>
+
+                    <div className="success-hashtags">
+                        {hashtags.map(tag => <span key={tag} className="success-tag">{tag}</span>)}
+                    </div>
+
+                    <p className="success-share-label">COMPARTE PARA AMPLIFICAR</p>
+
+                    <button className="success-share-main-btn" onClick={handleShare}>
+                        {copied ? '\u2713 Texto copiado' : savedImageURL ? '\uD83D\uDCF1 Compartir por mensaje (con foto)' : '\uD83D\uDCF1 Compartir por mensaje'}
+                    </button>
+                    {!navigator.share && !copied && (
+                        <p className="success-share-hint">En tu celular este bot\u00f3n abre el men\u00fa de mensajes directo.</p>
+                    )}
+
+                    <button className="success-close-btn" onClick={handleClose}>
+                        Ver mi reporte en el feed \u2192
+                    </button>
                 </div>
             </>
         );
     }
 
+    // ── NEARBY SCREEN ──────────────────────────────────────────────
+    if (showNearby) {
+        return (
+            <>
+                <div className="form-backdrop" onClick={onClose} />
+                <div className="form-panel">
+                    <div className="form-handle" />
+                    <div className="form-header">
+                        <h2 className="form-title">Ya hay reportes aqu\u00ed</h2>
+                        <button className="close-btn" onClick={onClose}><IoCloseCircle size={28} /></button>
+                    </div>
+                    <p className="nearby-intro">
+                        Encontramos {nearbyReports.length} reporte{nearbyReports.length !== 1 ? 's' : ''} a menos de 100 pies de tu ubicaci\u00f3n.
+                        \u00bfEs el mismo problema? Vota "Yo Tambi\u00e9n" para amplificarlo en vez de crear un duplicado.
+                    </p>
+                    <div className="nearby-list">
+                        {nearbyReports.map(r => {
+                            const catData = CATEGORIES.find(c => c.key === r.category) || CATEGORIES[0];
+                            const daysOpen = r.created_at ? Math.floor((Date.now() - new Date(r.created_at)) / 86400000) : 0;
+                            return (
+                                <div key={r.id} className="nearby-card">
+                                    {r.image_url && <img src={r.image_url} alt="" className="nearby-card-photo" />}
+                                    <div className="nearby-card-body">
+                                        <div className="nearby-card-cat" style={{ background: catData.color }}>
+                                            {catData.label.toUpperCase()} \u00b7 {r.subcategory?.toUpperCase()}
+                                        </div>
+                                        <div className="nearby-card-title">{r.title}</div>
+                                        <div className="nearby-card-meta">
+                                            {daysOpen === 0 ? 'Hoy' : `${daysOpen} d\u00edas abierto`} \u00b7 {r.vote_count || 0} votos
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div className="nearby-actions">
+                        <button className="nearby-btn-new" onClick={() => setNearbyDismissed(true)}>
+                            No es el mismo \u2014 crear nuevo reporte
+                        </button>
+                    </div>
+                    <p className="nearby-note">
+                        Para votar "Yo Tambi\u00e9n" en un reporte existente, cierra este formulario y toca la tarjeta en el feed.
+                    </p>
+                </div>
+            </>
+        );
+    }
 
-    // main form
+    // ── MAIN FORM ──────────────────────────────────────────────────
     return (
         <>
-            {/* backdrop - dark overlay behind the form */}
             <div className="form-backdrop" onClick={onClose} />
-            {/* form panel */}
-            <div className='form-panel'>
-                    
-                {/* form handle - "swipe to close" signal */}
-                <div className='form-handle' />
-                <div className='form-header'>
-                    <h2 className='form-title'>Nuevo Reporte</h2>
-                    <button className='close-btn' onClick={onClose}><IoCloseCircle size={28} /></button>
+            <div className="form-panel">
+                <div className="form-handle" />
+                <div className="form-header">
+                    <h2 className="form-title">Nuevo Reporte</h2>
+                    <button className="close-btn" onClick={onClose}><IoCloseCircle size={28} /></button>
                 </div>
-                    
-                {/* municipality and exact location display - auto-populated (read only) */}
-                {/* <div className='form-field'>
-                    <label className='form-label' htmlFor="formMunicipality">Municipio:</label>
-                    <div className='form-static'>
-                        {municipality || 'Toca el mapa para seleccionar ubicación'}
-                    </div>
-                </div>
-                <div className='form-field'>
-                    <label className='form-label' htmlFor="formLocation">Ubicación exacta:</label>
-                    <div className='form-static-loc'>
-                        {exactLocation || 'Toca el mapa para seleccionar ubicación'}
-                    </div>
-                </div> */}
 
-                <div className='loc-block'>
-                    <div className='loc-label'>UBICACIÓN</div>
-                    <div className='loc-muni'>{municipality || 'Toca el mapa para seleccionar ubicación'}</div>
-                    <div className='loc-exact'>{exactLocation || ''}</div>
-                    <div className='loc-badge'>GPS <IoCheckmarkSharp /></div>
-                    <button className='loc-change-btn' >
-                        Corregir ubicación
-                    </button>
+                {/* LOCATION */}
+                <div className={`loc-block${editingLoc ? ' loc-editing' : ''}`}>
+                    <div className="loc-label"><IoLocationSharp size={12} />UBICACI\u00d3N</div>
+                    {!editingLoc ? (
+                        <>
+                            <div className="loc-muni">{resolvedMuni || <span className="loc-empty">Sin ubicaci\u00f3n</span>}</div>
+                            {resolvedExact && <div className="loc-exact">{resolvedExact}</div>}
+                            {errors.location && <p className="form-error">{errors.location}</p>}
+                            <div className="loc-footer">
+                                <button className={`loc-gps-btn${gpsLoading ? ' loading' : ''}`} onClick={handleGpsInForm} disabled={gpsLoading}>
+                                    {gpsLoading ? 'Obteniendo GPS...' : '\uD83D\uDCCD GPS'}
+                                </button>
+                                <button className="loc-change-btn" onClick={() => { setLocQuery(''); setLocError(null); setEditingLoc(true); }}>
+                                    Corregir direcci\u00f3n
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="loc-edit-wrap">
+                            <p className="loc-edit-hint">Calle, barrio, o municipio en Puerto Rico.</p>
+                            <input className="loc-search-input" type="text"
+                                placeholder="Ej: Av. Ponce de Le\u00f3n 1042, San Juan"
+                                value={locQuery}
+                                onChange={e => { setLocQuery(e.target.value); setLocError(null); }}
+                                onKeyDown={e => e.key === 'Enter' && handleLocSearch()}
+                                autoFocus />
+                            {locError && <p className="loc-error">{locError}</p>}
+                            <div className="loc-edit-actions">
+                                <button className="loc-cancel-btn" onClick={() => { setEditingLoc(false); setLocQuery(''); setLocError(null); }}>Cancelar</button>
+                                <button className="loc-search-btn" onClick={handleLocSearch} disabled={locLoading || !locQuery.trim()}>
+                                    {locLoading ? 'Buscando...' : 'Buscar'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
-                
-                {/* main category picker */}
-                <div className='form-field'>
-                    <label className='form-label'>CATEGORÍA</label>
-                    <div className='cat-grid-main'>
+
+                {/* CATEGORY */}
+                <div className="form-field">
+                    <label className="form-label">CATEGOR\u00cdA</label>
+                    <div className="cat-grid-main">
                         {CATEGORIES.map(cat => (
-                            <button 
-                                key={cat.key}
-                                className={`cat-btn-main ${category === cat.key ? 'selected' : ''}`}
-                                // sets cat color per button
-                                style={{ '--cat-color': cat.color }} 
-                                onClick={() => handleCategorySelect(cat.key)}
-                            >
-                                <span className='cat-btn-icon'><cat.icon /></span>
-                                <span className='cat-btn-label'>{cat.label}</span>
+                            <button key={cat.key} className={`cat-btn-main${category === cat.key ? ' selected' : ''}`}
+                                style={{ '--cat-color': cat.color }} onClick={() => handleCategorySelect(cat.key)}>
+                                <span className="cat-btn-icon"><cat.icon /></span>
+                                <span className="cat-btn-label">{cat.label}</span>
                             </button>
                         ))}
                     </div>
-                    {/* validation error message below grid if validation fails */}
-                    {errors.category && <p className='form-error'>{errors.category}</p>}
+                    {errors.category && <p className="form-error">{errors.category}</p>}
                 </div>
 
-                {/* subcategory picker - only shows if a main category is selected */}
-                {selectedCategory && selectedCategory.subcategories.length > 0 && (
-                    <div className='form-field'>
-                        <label className='form-label'>SUBCATEGORÍA</label>
-                        <div className='sub-cat-grid'>
-                            {selectedCategory.subcategories.map(subcat => (
-                                <button 
-                                    key={subcat}
-                                    className={`sub-cat-btn ${subcategory === subcat ? 'selected' : ''}`}
-                                    style={{ '--cat-color': selectedCategory.color }}
-                                    onClick={() => setSubcategory(subcat)}
-                                >
-                                    {subcat}
+                {/* SUBCATEGORY */}
+                {selectedCat && selectedCat.subcategories.length > 0 && (
+                    <div className="form-field">
+                        <label className="form-label">\u00bfQU\u00c9 EST\u00c1 PASANDO?</label>
+                        <div className="sub-cat-grid">
+                            {selectedCat.subcategories.map(sub => (
+                                <button key={sub} className={`sub-cat-btn${subcategory === sub ? ' selected' : ''}`}
+                                    style={{ '--cat-color': selectedCat.color }}
+                                    onClick={() => { setSubcategory(sub); setSelectedChips([]); }}>
+                                    {sub}
                                 </button>
                             ))}
                         </div>
+                        {errors.subcategory && <p className="form-error">{errors.subcategory}</p>}
                     </div>
                 )}
 
-                {/* title input */}
-                <div className='form-field'>
-                    <label className='form-label'>TÍTULO</label>
-                    <input
-                        className={`form-input ${errors.title ? 'input-error' : ''}`}
-                        type='text'
-                        maxLength={80}
-                        placeholder='Describe brevemente el problema'
-                        value={title}
-                        onChange={e => setTitle(e.target.value)}
-                    />
-                    {errors.title && <p className='form-error'>{errors.title}</p>}
-                </div>
+                {/* CONTEXT CHIPS */}
+                {subcategory && (
+                    <div className="form-field">
+                        <label className="form-label">DESCRIBE LA SITUACI\u00d3N</label>
+                        <p className="chips-hint">Selecciona todo lo que aplique.</p>
+                        <div className="chips-grid">
+                            {CONTEXT_CHIPS.map(chip => (
+                                <button key={chip.key} className={`chip-btn${selectedChips.includes(chip.key) ? ' selected' : ''}`}
+                                    onClick={() => toggleChip(chip.key)}>
+                                    {chip.label}
+                                </button>
+                            ))}
+                        </div>
+                        {errors.chips && <p className="form-error">{errors.chips}</p>}
+                    </div>
+                )}
 
-                {/* description textarea */}
-                <div className='form-field'>
-                    <label className='form-label'>DESCRIPCIÓN</label>
-                    <textarea
-                        className={`form-textarea ${errors.description ? 'input-error' : ''}`}
-                        maxLength={500}
-                        placeholder='¿Cuánto tiempo lleva así? ¿Qué tan peligroso es?'
-                        value={description}
-                        onChange={e => setDescription(e.target.value)}
-                    />
-                    {/* live character count */}
-                    <div className='char-count'>{description.length}/500</div>
-                    {errors.description && <p className='form-error'>{errors.description}</p>}
-                </div>
+                {/* AUTO TITLE PREVIEW */}
+                {category && subcategory && (
+                    <div className="auto-title-block">
+                        <div className="auto-title-label">T\u00cdTULO DEL REPORTE</div>
+                        <div className="auto-title-text">{autoTitle}</div>
+                        {autoDescription && <div className="auto-desc-text">{autoDescription}</div>}
+                    </div>
+                )}
 
-                {/* photo upload */}
-                <div className='form-field'>
-                    <label className='form-label'>FOTO DE EVIDENCIA</label>
+                {/* PHOTO */}
+                <div className="form-field">
+                    <label className="form-label">FOTO DE EVIDENCIA <span className="form-label-opt">(opcional)</span></label>
                     {photoPreview ? (
-                        <div className='photo-preview-wrap'>
-                            <img src={photoPreview} alt='Evidencia' className='photo-preview' />
-                            <button className='remove-photo-btn' onClick={handleRemovePhoto}>
-                                <IoCloseCircle size={28} />
-                            </button>
+                        <div className="photo-preview-wrap">
+                            <img src={photoPreview} alt="Evidencia" className="photo-preview" />
+                            <button className="remove-photo-btn" onClick={handleRemovePhoto}><IoCloseCircle size={28} /></button>
                         </div>
                     ) : (
-                        <div className='photo-upload-group'>
-                            {/* primary: open camera directly */}
-                            <label className='photo-upload-btn camera-btn'>
-                                <IoCamera className='photo-upload-icon' size={20} />
-                                <span className='photo-upload-label'>Tomar foto</span>
-                                <input
-                                    type='file'
-                                    accept='image/*'
-                                    capture='environment'
-                                    onChange={handlePhotoChange}
-                                    style={{ display: 'none' }}
-                                />
+                        <div className="photo-upload-group">
+                            <label className="photo-upload-btn camera-btn">
+                                <IoCamera size={20} /><span className="photo-upload-label">Tomar foto</span>
+                                <input type="file" accept="image/*" capture="environment" onChange={handlePhotoChange} style={{ display: 'none' }} />
                             </label>
-                            {/* secondary: pick from gallery */}
-                            <label className='photo-upload-btn gallery-btn'>
-                                <IoImagesOutline size={18} />
-                                <span className='photo-upload-label'>Elegir de galería</span>
-                                <input
-                                    type='file'
-                                    accept='image/*'
-                                    onChange={handlePhotoChange}
-                                    style={{ display: 'none' }}
-                                />
+                            <label className="photo-upload-btn gallery-btn">
+                                <IoImagesOutline size={18} /><span className="photo-upload-label">Galer\u00eda</span>
+                                <input type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
                             </label>
                         </div>
                     )}
-
-                    {photoError && <p className='form-error photo-field-error'>{photoError}</p>}
-
-                    <p className='photo-note'>
-                        La foto debe mostrar claramente el problema. Se usará como evidencia para que las autoridades tomen acción. No subas fotos de personas o información privada.
-                    </p>
+                    {photoError && <p className="form-error photo-field-error">{photoError}</p>}
+                    <p className="photo-note">No subas fotos de personas o informaci\u00f3n privada.</p>
                 </div>
 
-                {/* anonymity assurance message */}
-                <p className='anon-notice'>Este reporte es 100% anónimo. No se requiere cuenta.</p>
+                <p className="anon-notice">Este reporte es 100% an\u00f3nimo. No se requiere cuenta.</p>
+                {submitError && <p className="form-error" style={{ marginBottom: 12 }}>{submitError}</p>}
 
-                {/* server level error */}
-                {submitError && (
-                    <p className='form-error' style={{ marginBottom: 12 }}>{submitError}</p>
-                )}
-
-                {/* submit button - disabled until form is valid */}
-                <button
-                    className={`submit-btn ${!isValid || submitting ? 'disabled' : ''}`}
-                    onClick={handleSubmit}
-                    disabled={!isValid || submitting}
-                >
+                <button className={`submit-btn${!isValid || submitting ? ' disabled' : ''}`}
+                    onClick={handleSubmit} disabled={!isValid || submitting}>
                     {uploadingPhoto ? 'Subiendo foto...' : submitting ? 'Enviando...' : 'Enviar reporte'}
                 </button>
             </div>
