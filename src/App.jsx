@@ -54,6 +54,14 @@ function App() {
     }
   }
 
+  // Single source of truth for report mutations (votes, status changes, etc.)
+  // — keeps ReportCard and ReportDetail showing the same numbers by updating
+  // both the reports list and the currently open detail view together.
+  function handleReportUpdate(updated) {
+    setSelectedReport(prev => (prev && prev.id === updated.id ? updated : prev));
+    setReports(prev => prev.map(r => (r.id === updated.id ? updated : r)));
+  }
+
   // ── LOCATION (pin drop + reverse geocoding) ─────────────────────────────────
   // All location state lives in this hook — see src/hooks/useLocation.js
   const {
@@ -118,10 +126,7 @@ function App() {
         <ReportDetail
           report={selectedReport}
           onBack={() => setSelectedReport(null)}
-          onUpdate={(updated) => {
-            setSelectedReport(updated);
-            setReports(prev => prev.map(r => r.id === updated.id ? updated : r));
-          }}
+          onUpdate={handleReportUpdate}
         />
       )}
 
@@ -185,7 +190,7 @@ function App() {
               <MapView {...mapProps} />
             </div>
             {muniPinCallout}
-            <FeedScreen reports={reports} loading={loadingReports} error={reportsError} onDetails={setSelectedReport} />
+            <FeedScreen reports={reports} loading={loadingReports} error={reportsError} onDetails={setSelectedReport} onVote={handleReportUpdate} />
           </div>
         </div>
 
@@ -194,7 +199,7 @@ function App() {
       {/* ── MOBILE tab content ── */}
       <div className="content">
         {(activeTab === 'mapa' || activeTab === 'feed') && (
-          <FeedScreen reports={reports} loading={loadingReports} error={reportsError} onDetails={setSelectedReport} />
+          <FeedScreen reports={reports} loading={loadingReports} error={reportsError} onDetails={setSelectedReport} onVote={handleReportUpdate} />
         )}
         {activeTab === 'datos' && (
           <div className="placeholder-panel">
