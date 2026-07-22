@@ -8,7 +8,7 @@
     display: flex;
     justify-content: center;    /* centers the inner group */
     align-items: center;
-    padding: 10px 0 22px;
+    padding: 10px 0 10px;
     z-index: 1000;
 }
 
