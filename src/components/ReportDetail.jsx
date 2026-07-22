@@ -97,7 +97,9 @@ function ReportDetail({ report, onBack, onUpdate }) {
     ].filter(l => l !== null).join('\n');
 
     // ── YO TAMBIÉN ────────────────────────────────────────────────
-    const [votes, setVotes]   = useState(vote_count);
+    // vote_count is the single source of truth (owned by App.jsx's reports
+    // array) — we render it straight from props and push updates back up
+    // via onUpdate so ReportCard stays in sync instead of drifting apart.
     const [voted, setVoted]   = useState(false);
     const [voting, setVoting] = useState(false);
 
@@ -110,14 +112,16 @@ function ReportDetail({ report, onBack, onUpdate }) {
                 // RPC not available — fallback: read fresh count then update
                 const { data: fresh } = await supabase
                     .from('reports').select('vote_count').eq('id', id).single();
-                const current = fresh?.vote_count ?? votes;
+                const current = fresh?.vote_count ?? vote_count;
                 const { error: ue } = await supabase
                     .from('reports').update({ vote_count: current + 1 }).eq('id', id);
-                if (!ue) { setVotes(current + 1); setVoted(true); }
-                else console.error('Vote error:', ue);
+                if (!ue) {
+                    setVoted(true);
+                    onUpdate?.({ ...report, vote_count: current + 1 });
+                } else console.error('Vote error:', ue);
             } else {
-                setVotes(typeof data === 'number' ? data : votes + 1);
                 setVoted(true);
+                onUpdate?.({ ...report, vote_count: typeof data === 'number' ? data : vote_count + 1 });
             }
         } catch (e) { console.error(e); }
         finally { setVoting(false); }
@@ -277,7 +281,7 @@ function ReportDetail({ report, onBack, onUpdate }) {
                 {/* ── YO TAMBIÉN ── */}
                 <div className="rd-vote-block">
                     <div className="rd-vote-left">
-                        <div className="rd-vote-num">{votes}</div>
+                        <div className="rd-vote-num">{vote_count}</div>
                         <div className="rd-vote-label">VECINOS DICEN<br />YO TAMBIÉN</div>
                     </div>
                     <button

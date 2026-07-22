@@ -9,7 +9,7 @@ import './FeedScreen.css';
         loading  — boolean, true while first fetch is in flight
         error    — string or null, error message if fetch failed
 */
-function FeedScreen({ reports = [], loading = false, error = null, onDetails }) {
+function FeedScreen({ reports = [], loading = false, error = null, onDetails, onVote }) {
 
     // Loading state — shown on first mount before data arrives
     if (loading) {
@@ -56,6 +56,7 @@ function FeedScreen({ reports = [], loading = false, error = null, onDetails }) 
                     key={report.id}
                     report={report}
                     onDetails={onDetails}
+                    onVote={onVote}
                 />
             ))}
         </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { CATEGORIES } from '../lib/constants';
 import { TiArrowSortedUp } from "react-icons/ti";
 import { MapPin } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import './ReportCard.css';
 
 // ── STATUS TRANSLATION ──────────────────────────────────────────────────────
@@ -49,7 +50,7 @@ const PHOTO_FALLBACK = {
     other:          'radial-gradient(ellipse at 50% 50%, #1A1A1A 0%, #0E0E0E 100%)',
 };
 
-function ReportCard({ report, onClick, onDetails }) {
+function ReportCard({ report, onClick, onDetails, onVote }) {
     const {
         id,
         category   = 'infrastructure',
@@ -61,7 +62,9 @@ function ReportCard({ report, onClick, onDetails }) {
         created_at,
     } = report;
 
-    const [votes, setVotes] = useState(vote_count);
+    // vote_count is the single source of truth (owned by App.jsx's reports
+    // array) — we render it straight from props and push updates back up
+    // via onVote so ReportDetail stays in sync instead of drifting apart.
     const [voted, setVoted] = useState(false);
 
     // Translate Supabase status → Spanish display label
@@ -90,11 +93,32 @@ function ReportCard({ report, onClick, onDetails }) {
         ? `QPR-B26-${String(id).slice(0, 6).toUpperCase()}`
         : 'QPR-??????';
 
-    function handleVote(e) {
+    async function handleVote(e) {
         e.stopPropagation();
         if (voted) return;
-        setVotes(v => v + 1);
         setVoted(true);
+        try {
+            const { data, error } = await supabase.rpc('increment_vote', { report_id: id });
+            if (error) {
+                // RPC not available — fallback: read fresh count then update
+                const { data: fresh } = await supabase
+                    .from('reports').select('vote_count').eq('id', id).single();
+                const current = fresh?.vote_count ?? vote_count;
+                const { error: ue } = await supabase
+                    .from('reports').update({ vote_count: current + 1 }).eq('id', id);
+                if (!ue) {
+                    onVote?.({ ...report, vote_count: current + 1 });
+                } else {
+                    console.error('Vote error:', ue);
+                    setVoted(false);
+                }
+            } else {
+                onVote?.({ ...report, vote_count: typeof data === 'number' ? data : vote_count + 1 });
+            }
+        } catch (err) {
+            console.error(err);
+            setVoted(false);
+        }
     }
 
     return (
@@ -154,7 +178,7 @@ function ReportCard({ report, onClick, onDetails }) {
                             onClick={handleVote}
                         >
                             <TiArrowSortedUp />
-                            <span className="rc-vote-count">{votes}</span>
+                            <span className="rc-vote-count">{vote_count}</span>
                         </button>
 
                         <div style={{ flex: 1 }} />
