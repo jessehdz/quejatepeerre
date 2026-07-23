@@ -42,7 +42,7 @@ function calcDaysOpen(createdAt) {
 }
 
 function formatDate(iso) {
-    if (!iso) return '\u2014';
+    if (!iso) return '—';
     return new Date(iso).toLocaleDateString('es-PR', {
         day: 'numeric', month: 'long', year: 'numeric',
     });
@@ -84,13 +84,13 @@ function ReportDetail({ report, onBack, onUpdate }) {
     // Full share message — title, description, location, municipality, date,
     // Google Maps link, hashtags, site URL
     const shareMessage = [
-        `\uD83D\uDEA8 ${title}`,
+        `🚨 ${title}`,
         description || null,
         ``,
-        `\uD83D\uDCCD ${exact_location || municipality || 'Puerto Rico'}`,
-        `\uD83C\uDFDB Municipio: ${municipality || 'Puerto Rico'}`,
-        `\uD83D\uDCC5 Reportado: ${dateStr}`,
-        `\uD83D\uDDFA Ver en el mapa: ${mapsLink}`,
+        `📍 ${exact_location || municipality || 'Puerto Rico'}`,
+        `🏛 Municipio: ${municipality || 'Puerto Rico'}`,
+        `📅 Reportado: ${dateStr}`,
+        `🗺 Ver en el mapa: ${mapsLink}`,
         ``,
         hashStr,
         `quejatepeerre.com`,
@@ -219,7 +219,7 @@ function ReportDetail({ report, onBack, onUpdate }) {
                     <div className="rd-report-num">{reportNum}</div>
                     <div className="rd-days-hero">
                         <span className="rd-days-num" style={{ color: daysColor }}>
-                            {resolved ? '\u2713' : daysOpen}
+                            {resolved ? '✓' : daysOpen}
                         </span>
                         <span className="rd-days-word">
                             {resolved ? 'RESUELTO' : daysOpen === 1 ? 'DÍA ABIERTO' : 'DÍAS ABIERTO'}
@@ -266,7 +266,7 @@ function ReportDetail({ report, onBack, onUpdate }) {
                     <div className="rd-meta-item">
                         <span className="rd-meta-label">Ver ubicación</span>
                         <a className="rd-maps-link" href={mapsLink} target="_blank" rel="noreferrer">
-                            Abrir en Google Maps \u2197
+                            Abrir en Google Maps ↗
                         </a>
                     </div>
                 </div>
@@ -314,7 +314,7 @@ function ReportDetail({ report, onBack, onUpdate }) {
                             </button>
                         ))}
                     </div>
-                    {statusUpdated && <p className="rd-status-confirm">\u2713 Estado actualizado</p>}
+                    {statusUpdated && <p className="rd-status-confirm">✓ Estado actualizado</p>}
                 </div>
 
                 {/* ── HASHTAGS ── */}
@@ -335,10 +335,10 @@ function ReportDetail({ report, onBack, onUpdate }) {
                     </div>
                     <button className="rd-share-main-btn" onClick={handleShare}>
                         {copied
-                            ? '\u2713 Texto copiado'
+                            ? '✓ Texto copiado'
                             : image_url
-                                ? '\uD83D\uDCF1 Compartir por mensaje (con foto)'
-                                : '\uD83D\uDCF1 Compartir por mensaje'}
+                                ? '📱 Compartir por mensaje (con foto)'
+                                : '📱 Compartir por mensaje'}
                     </button>
                     {!navigator.share && !copied && (
                         <p className="rd-share-hint">

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CATEGORIES } from '../lib/constants';
-import { TiArrowSortedUp } from "react-icons/ti";
+import { Megaphone } from "lucide-react";
 import { MapPin } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import './ReportCard.css';
@@ -177,7 +177,7 @@ function ReportCard({ report, onClick, onDetails, onVote }) {
                             className={`rc-upvote ${voted ? 'voted' : ''}`}
                             onClick={handleVote}
                         >
-                            <TiArrowSortedUp />
+                            <Megaphone size={18} />
                             <span className="rc-vote-count">{vote_count}</span>
                         </button>
 

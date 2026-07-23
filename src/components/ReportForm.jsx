@@ -53,7 +53,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                 } catch (e) { console.error(e); }
                 setGpsLoading(false);
             },
-            () => { alert('No se pudo obtener la ubicaci\u00f3n. Verifica los permisos de GPS.'); setGpsLoading(false); },
+            () => { alert('No se pudo obtener la ubicación. Verifica los permisos de GPS.'); setGpsLoading(false); },
             { enableHighAccuracy: true, timeout: 10000 }
         );
     }
@@ -63,12 +63,12 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
         setLocLoading(true); setLocError(null); setNearbyDismissed(false);
         try {
             const result = await forwardGeocode(locQuery.trim());
-            if (!result) { setLocError('No encontramos esa direcci\u00f3n. Intenta con la calle, barrio, o municipio.'); return; }
+            if (!result) { setLocError('No encontramos esa dirección. Intenta con la calle, barrio, o municipio.'); return; }
             setOverrideLng(result.lng); setOverrideLat(result.lat);
             setOverrideMuni(result.municipality); setOverrideExact(result.exactLocation);
             setEditingLoc(false); setLocQuery('');
         } catch (e) {
-            setLocError('Error buscando la direcci\u00f3n. Verifica tu conexi\u00f3n e intenta de nuevo.');
+            setLocError('Error buscando la dirección. Verifica tu conexión e intenta de nuevo.');
         } finally { setLocLoading(false); }
     }
 
@@ -116,10 +116,10 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
 
     function validate() {
         const e = {};
-        if (!resolvedLat)          e.location    = 'Selecciona una ubicaci\u00f3n.';
-        if (!category)             e.category    = 'Selecciona una categor\u00eda.';
-        if (!subcategory)          e.subcategory = 'Selecciona una subcategor\u00eda.';
-        if (!selectedChips.length) e.chips       = 'Selecciona al menos una descripci\u00f3n.';
+        if (!resolvedLat)          e.location    = 'Selecciona una ubicación.';
+        if (!category)             e.category    = 'Selecciona una categoría.';
+        if (!subcategory)          e.subcategory = 'Selecciona una subcategoría.';
+        if (!selectedChips.length) e.chips       = 'Selecciona al menos una descripción.';
         setErrors(e); return Object.keys(e).length === 0;
     }
 
@@ -154,13 +154,13 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
             : `https://maps.google.com/?q=${encodeURIComponent(resolvedExact || resolvedMuni || 'Puerto Rico')}`;
 
         const shareMessage = [
-            `\uD83D\uDEA8 ${autoTitle}`,
+            `🚨 ${autoTitle}`,
             autoDescription || null,
             ``,
-            `\uD83D\uDCCD ${resolvedExact || resolvedMuni || 'Puerto Rico'}`,
-            `\uD83C\uDFDB Municipio: ${resolvedMuni || 'Puerto Rico'}`,
-            `\uD83D\uDCC5 Reportado: ${dateStr}`,
-            `\uD83D\uDDFA Ver en el mapa: ${mapsLink}`,
+            `📍 ${resolvedExact || resolvedMuni || 'Puerto Rico'}`,
+            `🏛 Municipio: ${resolvedMuni || 'Puerto Rico'}`,
+            `📅 Reportado: ${dateStr}`,
+            `🗺 Ver en el mapa: ${mapsLink}`,
             ``,
             hashStr,
             `quejatepeerre.com`,
@@ -201,13 +201,13 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                     <div className="form-handle" />
 
                     <div className="success-logo">
-                        <span className="success-logo-red">Qu\u00e9jate</span>
+                        <span className="success-logo-red">Quéjate</span>
                         <span className="success-logo-blue">PeErre</span>
                     </div>
 
-                    <div className="success-check">\u2713</div>
+                    <div className="success-check">✓</div>
                     <h3 className="success-title">Tu reporte fue enviado</h3>
-                    <p className="success-sub">An\u00f3nimo \u00b7 Visible para todos \u00b7 Gratis</p>
+                    <p className="success-sub">Anónimo · Visible para todos · Gratis</p>
 
                     {savedImageURL && <img src={savedImageURL} alt="Evidencia" className="success-photo" />}
 
@@ -215,11 +215,11 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                         <div className="success-summary-title">{autoTitle}</div>
                         {autoDescription && <div className="success-summary-desc">{autoDescription}</div>}
                         <div className="success-summary-meta">
-                            {resolvedExact && <span>\uD83D\uDCCD {resolvedExact}</span>}
-                            <span>\uD83C\uDFDB {resolvedMuni || 'Puerto Rico'}</span>
-                            <span>\uD83D\uDCC5 {dateStr}</span>
+                            {resolvedExact && <span>📍 {resolvedExact}</span>}
+                            <span>🏛 {resolvedMuni || 'Puerto Rico'}</span>
+                            <span>📅 {dateStr}</span>
                             <a className="success-maps-link" href={mapsLink} target="_blank" rel="noreferrer">
-                                \uD83D\uDDFA Abrir en Google Maps \u2197
+                                🗺 Abrir en Google Maps ↗
                             </a>
                         </div>
                     </div>
@@ -231,14 +231,14 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                     <p className="success-share-label">COMPARTE PARA AMPLIFICAR</p>
 
                     <button className="success-share-main-btn" onClick={handleShare}>
-                        {copied ? '\u2713 Texto copiado' : savedImageURL ? '\uD83D\uDCF1 Compartir por mensaje (con foto)' : '\uD83D\uDCF1 Compartir por mensaje'}
+                        {copied ? '✓ Texto copiado' : savedImageURL ? '📱 Compartir por mensaje (con foto)' : '📱 Compartir por mensaje'}
                     </button>
                     {!navigator.share && !copied && (
-                        <p className="success-share-hint">En tu celular este bot\u00f3n abre el men\u00fa de mensajes directo.</p>
+                        <p className="success-share-hint">En tu celular este botón abre el menú de mensajes directo.</p>
                     )}
 
                     <button className="success-close-btn" onClick={handleClose}>
-                        Ver mi reporte en el feed \u2192
+                        Ver mi reporte en el feed →
                     </button>
                 </div>
             </>
@@ -253,12 +253,12 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                 <div className="form-panel">
                     <div className="form-handle" />
                     <div className="form-header">
-                        <h2 className="form-title">Ya hay reportes aqu\u00ed</h2>
+                        <h2 className="form-title">Ya hay reportes aquí</h2>
                         <button className="close-btn" onClick={onClose}><IoCloseCircle size={28} /></button>
                     </div>
                     <p className="nearby-intro">
-                        Encontramos {nearbyReports.length} reporte{nearbyReports.length !== 1 ? 's' : ''} a menos de 100 pies de tu ubicaci\u00f3n.
-                        \u00bfEs el mismo problema? Vota "Yo Tambi\u00e9n" para amplificarlo en vez de crear un duplicado.
+                        Encontramos {nearbyReports.length} reporte{nearbyReports.length !== 1 ? 's' : ''} a menos de 100 pies de tu ubicación.
+                        ¿Es el mismo problema? Vota "Yo También" para amplificarlo en vez de crear un duplicado.
                     </p>
                     <div className="nearby-list">
                         {nearbyReports.map(r => {
@@ -269,11 +269,11 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                                     {r.image_url && <img src={r.image_url} alt="" className="nearby-card-photo" />}
                                     <div className="nearby-card-body">
                                         <div className="nearby-card-cat" style={{ background: catData.color }}>
-                                            {catData.label.toUpperCase()} \u00b7 {r.subcategory?.toUpperCase()}
+                                            {catData.label.toUpperCase()} · {r.subcategory?.toUpperCase()}
                                         </div>
                                         <div className="nearby-card-title">{r.title}</div>
                                         <div className="nearby-card-meta">
-                                            {daysOpen === 0 ? 'Hoy' : `${daysOpen} d\u00edas abierto`} \u00b7 {r.vote_count || 0} votos
+                                            {daysOpen === 0 ? 'Hoy' : `${daysOpen} días abierto`} · {r.vote_count || 0} votos
                                         </div>
                                     </div>
                                 </div>
@@ -282,11 +282,11 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                     </div>
                     <div className="nearby-actions">
                         <button className="nearby-btn-new" onClick={() => setNearbyDismissed(true)}>
-                            No es el mismo \u2014 crear nuevo reporte
+                            No es el mismo — crear nuevo reporte
                         </button>
                     </div>
                     <p className="nearby-note">
-                        Para votar "Yo Tambi\u00e9n" en un reporte existente, cierra este formulario y toca la tarjeta en el feed.
+                        Para votar "Yo También" en un reporte existente, cierra este formulario y toca la tarjeta en el feed.
                     </p>
                 </div>
             </>
@@ -306,18 +306,18 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
 
                 {/* LOCATION */}
                 <div className={`loc-block${editingLoc ? ' loc-editing' : ''}`}>
-                    <div className="loc-label"><IoLocationSharp size={12} />UBICACI\u00d3N</div>
+                    <div className="loc-label"><IoLocationSharp size={12} />UBICACIÓN</div>
                     {!editingLoc ? (
                         <>
-                            <div className="loc-muni">{resolvedMuni || <span className="loc-empty">Sin ubicaci\u00f3n</span>}</div>
+                            <div className="loc-muni">{resolvedMuni || <span className="loc-empty">Sin ubicación</span>}</div>
                             {resolvedExact && <div className="loc-exact">{resolvedExact}</div>}
                             {errors.location && <p className="form-error">{errors.location}</p>}
                             <div className="loc-footer">
                                 <button className={`loc-gps-btn${gpsLoading ? ' loading' : ''}`} onClick={handleGpsInForm} disabled={gpsLoading}>
-                                    {gpsLoading ? 'Obteniendo GPS...' : '\uD83D\uDCCD GPS'}
+                                    {gpsLoading ? 'Obteniendo GPS...' : '📍 GPS'}
                                 </button>
                                 <button className="loc-change-btn" onClick={() => { setLocQuery(''); setLocError(null); setEditingLoc(true); }}>
-                                    Corregir direcci\u00f3n
+                                    Corregir dirección
                                 </button>
                             </div>
                         </>
@@ -325,7 +325,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                         <div className="loc-edit-wrap">
                             <p className="loc-edit-hint">Calle, barrio, o municipio en Puerto Rico.</p>
                             <input className="loc-search-input" type="text"
-                                placeholder="Ej: Av. Ponce de Le\u00f3n 1042, San Juan"
+                                placeholder="Ej: Av. Ponce de León 1042, San Juan"
                                 value={locQuery}
                                 onChange={e => { setLocQuery(e.target.value); setLocError(null); }}
                                 onKeyDown={e => e.key === 'Enter' && handleLocSearch()}
@@ -343,7 +343,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
 
                 {/* CATEGORY */}
                 <div className="form-field">
-                    <label className="form-label">CATEGOR\u00cdA</label>
+                    <label className="form-label">CATEGORÍA</label>
                     <div className="cat-grid-main">
                         {CATEGORIES.map(cat => (
                             <button key={cat.key} className={`cat-btn-main${category === cat.key ? ' selected' : ''}`}
@@ -359,7 +359,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                 {/* SUBCATEGORY */}
                 {selectedCat && selectedCat.subcategories.length > 0 && (
                     <div className="form-field">
-                        <label className="form-label">\u00bfQU\u00c9 EST\u00c1 PASANDO?</label>
+                        <label className="form-label">¿QUÉ ESTÁ PASANDO?</label>
                         <div className="sub-cat-grid">
                             {selectedCat.subcategories.map(sub => (
                                 <button key={sub} className={`sub-cat-btn${subcategory === sub ? ' selected' : ''}`}
@@ -376,7 +376,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                 {/* CONTEXT CHIPS */}
                 {subcategory && (
                     <div className="form-field">
-                        <label className="form-label">DESCRIBE LA SITUACI\u00d3N</label>
+                        <label className="form-label">DESCRIBE LA SITUACIÓN</label>
                         <p className="chips-hint">Selecciona todo lo que aplique.</p>
                         <div className="chips-grid">
                             {CONTEXT_CHIPS.map(chip => (
@@ -393,7 +393,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                 {/* AUTO TITLE PREVIEW */}
                 {category && subcategory && (
                     <div className="auto-title-block">
-                        <div className="auto-title-label">T\u00cdTULO DEL REPORTE</div>
+                        <div className="auto-title-label">TÍTULO DEL REPORTE</div>
                         <div className="auto-title-text">{autoTitle}</div>
                         {autoDescription && <div className="auto-desc-text">{autoDescription}</div>}
                     </div>
@@ -414,16 +414,16 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                                 <input type="file" accept="image/*" capture="environment" onChange={handlePhotoChange} style={{ display: 'none' }} />
                             </label>
                             <label className="photo-upload-btn gallery-btn">
-                                <IoImagesOutline size={18} /><span className="photo-upload-label">Galer\u00eda</span>
+                                <IoImagesOutline size={18} /><span className="photo-upload-label">Galería</span>
                                 <input type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
                             </label>
                         </div>
                     )}
                     {photoError && <p className="form-error photo-field-error">{photoError}</p>}
-                    <p className="photo-note">No subas fotos de personas o informaci\u00f3n privada.</p>
+                    <p className="photo-note">No subas fotos de personas o información privada.</p>
                 </div>
 
-                <p className="anon-notice">Este reporte es 100% an\u00f3nimo. No se requiere cuenta.</p>
+                <p className="anon-notice">Este reporte es 100% anónimo. No se requiere cuenta.</p>
                 {submitError && <p className="form-error" style={{ marginBottom: 12 }}>{submitError}</p>}
 
                 <button className={`submit-btn${!isValid || submitting ? ' disabled' : ''}`}
