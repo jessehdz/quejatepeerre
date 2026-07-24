@@ -8,7 +8,7 @@
     display: flex;
     justify-content: center;    /* centers the inner group */
     align-items: center;
-    padding: 10px 0 10px;
+    padding: 10px 0 0px;
     z-index: 1000;
 }
 
@@ -55,15 +55,16 @@
 
 /* red FAB */
 .nav-fab {
-    width: 50px;
-    height: 50px;
+    width: 55px;
+    height: 55px;
     border-radius: 50%;
     background: var(--red);
     color: var(--cream);
     font-size: 24px;
     font-weight: 700;
     border: 3px solid var(--bg);
-    margin-top: -20px;
+    margin-top: -14px;
+    padding-top: 3px;
     cursor: pointer;
     display: flex;
     align-items: center;
