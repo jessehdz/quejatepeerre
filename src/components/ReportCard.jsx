@@ -78,8 +78,8 @@ function ReportCard({ report, onClick, onDetails, onVote }) {
     const daysWord = resolved
         ? 'RESUELTO'
         : daysOpen === 1
-            ? 'DÍA ABIERTO'
-            : 'DÍAS ABIERTO';
+            ? 'DÍA'
+            : 'DÍAS';
     const daysClr = daysColor(daysOpen, resolved);
 
     const catData = CATEGORIES.find(c => c.key === category) || CATEGORIES[0];
@@ -90,8 +90,8 @@ function ReportCard({ report, onClick, onDetails, onVote }) {
         : (PHOTO_FALLBACK[category] || PHOTO_FALLBACK.other);
 
     const reportNum = id
-        ? `QPR-B26-${String(id).slice(0, 6).toUpperCase()}`
-        : 'QPR-??????';
+        ? `QPR-B26-${String(id).slice(0, 4).toUpperCase()}`
+        : 'QPR-YY-???';
 
     async function handleVote(e) {
         e.stopPropagation();
@@ -132,7 +132,6 @@ function ReportCard({ report, onClick, onDetails, onVote }) {
                     <div className="rc-cat-pill">
                         <span className="rc-cat-left" style={{ background: catData.color }}>
                             <span className="rc-cat-icon">{CatIcon && <CatIcon />}</span>
-                            {catData.label.toUpperCase()}
                         </span>
                         {subcategory && (
                             <span className="rc-cat-right">
@@ -142,15 +141,19 @@ function ReportCard({ report, onClick, onDetails, onVote }) {
                     </div>
 
                     <span className="rc-status" style={{ background: statusBg }}>
-                        <span className="rc-status-dot" />
-                        {statusLabel}
+                        <span className="rc-status-label">{statusLabel}</span>
+                        
+                        <span className="rc-days-row">
+                            <span className="rc-days-num" style={{ color: daysClr }}>
+                                {daysNum}
+                            </span>
+                            <span className="rc-days-word">{daysWord}</span>
+                        </span>
                     </span>
                 </div>
 
                 {/* BOTTOM CONTENT */}
                 <div className="rc-bottom">
-
-                    <div className="rc-report-num">{reportNum}</div>
 
                     <div className="rc-muni-row">
                         <MapPin size={14} />
@@ -160,18 +163,11 @@ function ReportCard({ report, onClick, onDetails, onVote }) {
                         </span>
                     </div>
 
+                    <div className="rc-report-num">{reportNum}</div>
+
                     <div className="rc-divider" />
 
                     <div className="rc-stats">
-
-                        <div className="rc-days">
-                            <span className="rc-days-num" style={{ color: daysClr }}>
-                                {daysNum}
-                            </span>
-                            <span className="rc-days-word">{daysWord}</span>
-                        </div>
-
-                        <div className="rc-stat-divider" />
 
                         <button
                             className={`rc-upvote ${voted ? 'voted' : ''}`}
