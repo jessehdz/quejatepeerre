@@ -1,0 +1,107 @@
+/* GpsBlocked — bottom sheet overlay, mobile-first (mirrors GpsPrimer) */
+
+.gps-blocked-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    z-index: 600;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.gps-blocked-sheet {
+    width: 100%;
+    max-width: 480px;
+    background: var(--bg2);
+    border-radius: 28px 28px 0 0;
+    border-top: 2px solid var(--tile2);
+    padding: 28px 28px 40px;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    animation: gpsBlockedSlideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes gpsBlockedSlideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+}
+
+.gps-blocked-title {
+    font-family: var(--font_main);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--cream);
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    margin-bottom: 10px;
+}
+
+.gps-blocked-body {
+    font-family: var(--font_content);
+    font-size: 14px;
+    color: var(--muted2);
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.gps-blocked-steps {
+    padding-left: 20px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-family: var(--font_content);
+    font-size: 14px;
+    color: var(--muted2);
+    line-height: 1.5;
+}
+
+.gps-blocked-steps strong {
+    color: var(--cream);
+}
+
+.gps-blocked-settings-btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: 14px;
+    background: var(--tile);
+    border: 1px solid var(--border2);
+    color: var(--cel);
+    font-family: var(--font_main);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-bottom: 16px;
+}
+
+.gps-blocked-settings-btn:active { opacity: 0.85; }
+
+.gps-blocked-note {
+    font-family: var(--font_content);
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.gps-blocked-close {
+    width: 100%;
+    padding: 15px;
+    border-radius: 14px;
+    background: var(--red);
+    color: #fff;
+    font-family: var(--font_main);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.gps-blocked-close:active { opacity: 0.85; }
