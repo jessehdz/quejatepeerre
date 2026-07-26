@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Megaphone } from 'lucide-react';
+import { FaExclamation } from "react-icons/fa";
+
 import './Onboarding.css';
 
 /*
@@ -17,23 +19,23 @@ function Onboarding({ onDone }) {
 
     const slides = [
         {
-            emoji: '🇵🇷',
+            emoji: '',
             title: 'QuéjatePeErre',
             body: 'La plataforma ciudadana donde los problemas de Puerto Rico no se pueden ignorar.',
             sub: 'Anónimo · Gratis · Sin cuenta',
             cta: 'Empezar',
         },
         {
-            emoji: '📍',
+            emoji: <FaExclamation size={48} color="var(--cream)" strokeWidth={2.5} />,
             title: 'Reporta en segundos',
-            body: 'Toca el mapa o usa GPS. Elige la categoría. Listo.\nTú no escribes nada — nosotros generamos el reporte por ti.',
-            sub: 'El municipio queda notificado públicamente.',
+            body: 'Toca el mapa o usa GPS. Elige la categoría y descripción. Listo.\nTú no escribes nada — nosotros generamos el reporte por ti.',
+            sub: '',
             cta: 'Siguiente',
         },
         {
-            emoji: '▲',
+            emoji: <Megaphone size={48} color="var(--cream)" strokeWidth={2.5} />,
             title: '"Yo también"',
-            body: 'Si ya existe un reporte en tu área, vota "Yo también" para amplificarlo.\nCuantos más votos, más presión al municipio.',
+            body: `Si ya existe un reporte en tu área, vota "Yo también" para amplificarlo.\nCuantos más votos, más presión al municipio.`,
             sub: 'Tu nombre nunca aparece.',
             cta: '¡Vamos!',
         },
@@ -73,16 +75,14 @@ function Onboarding({ onDone }) {
                 {/* Slide icon — slide 0 uses the logo + Megaphone, others use emoji */}
                 {slide === 0 ? (
                     <div className="ob-logo-icon">
-                        <Megaphone size={48} color="var(--red)" strokeWidth={1.5} />
                         <div className="ob-logo-text">
-                            <span className="ob-logo-red">Quéjate</span>
-                            <span className="ob-logo-blue">PeErre</span>
+                            <Megaphone size={18} fill="white" strokeWidth={0} />
+                            <span>Quéjate<span className='logo-red'>Pe</span><span className='logo-cel-blue'>Erre</span></span>
                         </div>
                     </div>
                 ) : (
                     <div className="ob-emoji">{current.emoji}</div>
                 )}
-                <h2 className="ob-title">{current.title}</h2>
                 <p className="ob-body">
                     {current.body.split('\n').map((line, i) => (
                         <span key={i}>{line}{i < current.body.split('\n').length - 1 && <br />}</span>
