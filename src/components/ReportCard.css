@@ -1,25 +1,19 @@
 /* ── REPORT CARD — Full-bleed photo design (from Report Card2.dc.html) ─────────
-   Fonts: Newsreader (days number) + Hanken Grotesk (body) + Spline Sans Mono (meta)
+   Fonts: Newsreader (dropdown title) + var(--font_content) (body) + Spline Sans Mono (vote count)
 ──────────────────────────────────────────────────────────────────────────────── */
 
-@keyframes voteUp {
-  0%   { transform: scale(1); }
-  35%  { transform: scale(1.35); }
-  65%  { transform: scale(0.94); }
-  100% { transform: scale(1); }
-}
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Article wrapper */
+/* Article wrapper — not clickable itself; only the chevron, vote button,
+   and dropdown action buttons inside it are. */
 .rc-article {
   border-radius: 18px;
   overflow: hidden;
   position: relative;
   box-shadow: 0 22px 44px -18px rgba(20,12,4,0.55);
-  cursor: pointer;
   animation: fadeUp 0.32s ease both;
   margin-bottom: 18px;
 }
@@ -80,11 +74,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: #fff;
-  /* font-family: 'Hanken Grotesk', sans-serif; */
-  /* font-size: 10.5px; */
-  /* font-weight: 800; */
-  /* letter-spacing: 0.02em; */
+  color: var(--cream);
   padding: 5px 8px;
   border-radius: 9px 1px 1px 9px;
   line-height: 1;
@@ -97,8 +87,8 @@
   align-items: center;
   background: rgba(20, 14, 8,0.3);
   backdrop-filter: blur(8px);
-  color: #fff;
-  font-family: 'Hanken Grotesk', sans-serif;
+  color: var(--cream);
+  font-family: var(--font_nums);
   font-size: 10.5px;
   font-weight: 600;
   padding: 6px 10px;
@@ -114,7 +104,7 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  color: #fff;
+  color: var(--cream);
   font-family: var(--font_nums);
   font-size: 10.5px;
   font-weight: 700;
@@ -166,52 +156,20 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  margin-bottom: 3px;
+  margin-bottom: 17px;
 }
-
-/* .rc-muni-pin {
-  width: 6px;
-  height: 6px;
-  border-radius: 50% 50% 50% 0;
-  background: rgba(255,255,255,0.7);
-  transform: rotate(-45deg);
-  display: inline-block;
-  flex: none;
-} */
 
 .rc-muni {
   font-family: var(--font_content);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 700;
-  color: rgba(255,255,255,0.85);
+  color: var(--cream);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
-.rc-divider {
-  height: 1px;
-  background: rgba(255,255,255,0.13);
-  margin-bottom: 9px;
-}
-
-/* ── STATS STRIP ── */
-.rc-stats {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.rc-report-num {
-  display: block;
-  font-family: var(--font_nums);
-  font-size: 10px;
-  font-weight: 300;
-  color: rgba(255,255,255,0.5);
-  letter-spacing: 0.1em;
-  margin-bottom: 9px;
-  text-transform: uppercase;
-}
-
+/* Not clickable yet — voting will require a GPS radius check first.
+   cursor stays default so it reads as a stat, not a control. */
 .rc-upvote {
   display: inline-flex;
   align-items: center;
@@ -219,12 +177,11 @@
   height: 30px;
   padding: 0 11px;
   border-radius: 999px;
-  cursor: pointer;
+  cursor: default;
   font-family: var(--font_nums);
-  transition: all 0.18s;
   background: rgba(255,255,255,0.12);
   border: 1.5px solid rgba(255,255,255,0.28);
-  color: #fff;
+  color: var(--cream);
   backdrop-filter: blur(10px);
 }
 
@@ -232,15 +189,6 @@
   background: var(--red);
   border-color: var(--red);
   color: #FAF5E9;
-}
-
-.rc-upvote.voted .rc-arrow {
-  animation: voteUp 0.38s cubic-bezier(.36,.07,.19,.97);
-}
-
-.rc-arrow {
-  display: inline-block;
-  font-size: 11px;
 }
 
 .rc-vote-count {
@@ -251,24 +199,165 @@
   text-align: center;
 }
 
-.rc-details {
-  display: inline-flex;
+/* Full-width label + chevron bar — the only clickable spot on the photo,
+   so it carries a "Ver más/menos" label rather than relying on the icon alone. */
+.rc-toggle-tab {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 20px;
+  border: none;
+  border-radius: 0;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
-  height: 30px;
-  padding: 0 12px;
-  border-radius: 7px;
-  border: 1.5px solid rgba(255,255,255,0.32);
-  background: rgba(255,255,255,0.1);
-  backdrop-filter: blur(10px);
-  color: #fff;
-  font-family: var(--font_nums);
-  font-size: 11.5px;
-  font-weight: 700;
-  text-transform: uppercase;
   cursor: pointer;
-  white-space: nowrap;
-  letter-spacing: 0.01em;
+  z-index: 2;
+  transition: filter 0.15s ease;
+
+  background: var(--cream);
+  backdrop-filter: blur(8px);
+  font-family: var(--font_nums);
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 6px 10px;
+  line-height: 1;
+  letter-spacing: 0.06em;
+}
+.rc-toggle-tab:hover { filter: brightness(1.12); }
+.rc-toggle-tab:active { filter: brightness(0.92); }
+
+.rc-toggle-label {
+  font-family: var(--font_nums);
+  font-size: 10.5px;
+  font-weight: 1200;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #2d2d2d;
 }
 
-.rc-arrow-sm { font-size: 10px; opacity: 0.7; }
+.rc-chevron { color: #2d2d2d; display: block; transition: transform 0.2s; }
+.rc-chevron.open { transform: rotate(180deg); }
+
+.rc-dropdown {
+  position: relative;
+  background: #1B1712;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 18px 18px 16px 20px;
+}
+.rc-dropdown-strip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--cream);
+}
+.rc-dropdown-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.rc-dropdown-title-wrap { min-width: 0; }
+.rc-dropdown-title {
+  margin: 0 0 6px;
+  font-family: 'Newsreader', serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.3;
+  color: #FAF5E9;
+}
+.rc-dropdown-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cream);
+}
+.rc-dropdown-num {
+  color: rgba(255,255,255,0.5);
+  font-family: var(--font_nums);
+}
+.rc-dropdown-location { margin-bottom: 18px; }
+.rc-location-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #FAF5E9;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+.rc-location-pin {
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: inline-block;
+  flex: none;
+}
+.rc-location-text {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(255,255,255,0.3);
+  cursor: pointer;
+}
+.rc-date-text {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  padding-left: 15px;
+  font-family: var(--font_nums);
+  text-transform: uppercase;
+}
+.rc-dropdown-actions { display: flex; gap: 8px; }
+.rc-action-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 9px;
+  border: 1.5px solid rgba(255,255,255,0.25);
+  background: transparent;
+  color: var(--cream);
+  font-family: var(--font_content);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.rc-action-btn.primary { 
+  border: none; 
+  background: rgba(255,255,255,0.32);
+  color: var(--cream);
+}
+.rc-action-icon { flex: none; }
+
+/* Mobile: Compartir / Actualizar estado shrink to icon-only so all three
+   buttons fit on one row — Más detalles keeps its full label. */
+@media (max-width: 480px) {
+  .rc-action-btn:not(.primary) {
+    flex: none;
+    width: 36px;
+    padding: 0;
+  }
+  .rc-action-btn:not(.primary) .rc-action-label {
+    display: none;
+  }
+  .rc-action-btn.primary {
+    flex: 1;
+  }
+}

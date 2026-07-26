@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { CATEGORIES } from '../lib/constants';
 import { Megaphone } from "lucide-react";
 import { MapPin } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import { Share2 } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import './ReportCard.css';
 
@@ -33,6 +36,13 @@ function calcDaysOpen(createdAt) {
     return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
 }
 
+function formatDate(createdAt) {
+    if (!createdAt) return '';
+    return new Date(createdAt).toLocaleDateString('es-PR', {
+        day: 'numeric', month: 'short', year: 'numeric',
+    });
+}
+
 function daysColor(days, resolved) {
     if (resolved) return '#72C472';
     if (days >= 90) return '#FF7A5A';
@@ -50,21 +60,21 @@ const PHOTO_FALLBACK = {
     other:          'radial-gradient(ellipse at 50% 50%, #1A1A1A 0%, #0E0E0E 100%)',
 };
 
-function ReportCard({ report, onClick, onDetails, onVote }) {
+function ReportCard({ report, onDetails, onVote, onShare, onUpdateStatus }) {
     const {
         id,
         category   = 'infrastructure',
         subcategory,
+        title,
         municipality,
+        exact_location,
         status     = 'open',
         vote_count = 0,
         image_url,
         created_at,
     } = report;
 
-    // vote_count is the single source of truth (owned by App.jsx's reports
-    // array) — we render it straight from props and push updates back up
-    // via onVote so ReportDetail stays in sync instead of drifting apart.
+    /* vote_count is the single source of truth (owned by App.jsx's reports array) — we render it straight from props and push updates back up via onVote so ReportDetail stays in sync instead of drifting apart. */
     const [voted, setVoted] = useState(false);
 
     // Translate Supabase status → Spanish display label
@@ -90,11 +100,17 @@ function ReportCard({ report, onClick, onDetails, onVote }) {
         : (PHOTO_FALLBACK[category] || PHOTO_FALLBACK.other);
 
     const reportNum = id
-        ? `QPR-B26-${String(id).slice(0, 4).toUpperCase()}`
+        ? `QPR-${String(id).slice(0, 3).toUpperCase()}`
         : 'QPR-YY-???';
 
-    async function handleVote(e) {
-        e.stopPropagation();
+    // Exact address (or municipality fallback) → opens the device's default maps app
+    const mapsQuery = exact_location || municipality || 'Puerto Rico';
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`;
+
+    // Expandable details section
+    const [expanded, setExpanded] = useState(false);
+
+    async function handleVote() {
         if (voted) return;
         setVoted(true);
         try {
@@ -122,7 +138,7 @@ function ReportCard({ report, onClick, onDetails, onVote }) {
     }
 
     return (
-        <article className="rc-article" onClick={onClick}>
+        <article className="rc-article">
 
             <div className="rc-photo" style={{ background: photoBg }}>
                 <div className="rc-scrim" />
@@ -142,7 +158,7 @@ function ReportCard({ report, onClick, onDetails, onVote }) {
 
                     <span className="rc-status" style={{ background: statusBg }}>
                         <span className="rc-status-label">{statusLabel}</span>
-                        
+
                         <span className="rc-days-row">
                             <span className="rc-days-num" style={{ color: daysClr }}>
                                 {daysNum}
@@ -157,39 +173,79 @@ function ReportCard({ report, onClick, onDetails, onVote }) {
 
                     <div className="rc-muni-row">
                         <MapPin size={14} />
-                        {/* <span className="rc-muni-pin" /> */}
                         <span className="rc-muni">
                             {municipality ? municipality.toUpperCase() : 'PUERTO RICO'}
                         </span>
-                    </div>
-
-                    <div className="rc-report-num">{reportNum}</div>
-
-                    <div className="rc-divider" />
-
-                    <div className="rc-stats">
-
+                        <div style={{ flex: 1 }} />
+                        {/* Disabled for now — voting will require a GPS radius check
+                            before it's re-enabled. handleVote/voted stay wired so
+                            that check can just remove the `disabled` prop later. */}
                         <button
                             className={`rc-upvote ${voted ? 'voted' : ''}`}
                             onClick={handleVote}
+                            disabled
                         >
                             <Megaphone size={18} />
                             <span className="rc-vote-count">{vote_count}</span>
                         </button>
-
-                        <div style={{ flex: 1 }} />
-
-                        <button
-                            className="rc-details"
-                            onClick={e => { e.stopPropagation(); onDetails?.(report); }}
-                        >
-                            Más detalles →
-                        </button>
-
                     </div>
                 </div>
+                <button
+                    className="rc-toggle-tab"
+                    
+                    onClick={() => setExpanded(v => !v)}
+                    aria-expanded={expanded}
+                    aria-label={expanded ? 'Ocultar detalles' : 'Ver más detalles'}
+                >
+                    <span className="rc-toggle-label">{expanded ? 'Ver menos' : 'Ver más'}</span>
+                    <ChevronDown size={14} className={expanded ? 'rc-chevron open' : 'rc-chevron'} />
+                </button>
             </div>
 
+            {expanded && (
+                <div className="rc-dropdown">
+                    <div className="rc-dropdown-strip"  />
+
+                    <div className="rc-dropdown-head">
+                        <div className="rc-dropdown-title-wrap">
+                            <h3 className="rc-dropdown-title">{title || catData.label}</h3>
+                            <div className="rc-dropdown-meta">
+                                <span>{catData.label}</span>
+                                <span className="rc-dropdown-num">· {reportNum}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="rc-dropdown-location">
+                        <div className="rc-location-row">
+                            <span className="rc-location-pin" style={{ borderColor: catData.color }} />
+                            <a
+                                className="rc-location-text"
+                                href={mapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {exact_location || (municipality ? municipality.toUpperCase() : 'PUERTO RICO')}
+                            </a>
+                        </div>
+                        <div className="rc-date-text">{formatDate(created_at)}</div>
+                    </div>
+
+                    <div className="rc-dropdown-actions">
+                        <button className="btn rc-action-btn" aria-label="Compartir" onClick={() => onShare?.(report)}>
+                            <Share2 size={15} className="rc-action-icon" />
+                            <span className="rc-action-label">Compartir →</span>
+                        </button>
+                        <button className="btn rc-action-btn" aria-label="Actualizar estado" onClick={() => onUpdateStatus?.(report)}>
+                            <RefreshCw size={15} className="rc-action-icon" />
+                            <span className="rc-action-label">Actualizar estado →</span>
+                        </button>
+                        <button className="btn rc-action-btn primary" onClick={() => onDetails?.(report)}>
+                            Más detalles →
+                        </button>
+                    </div>
+                </div>
+            )}
         </article>
     );
 }
