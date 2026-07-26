@@ -10,6 +10,8 @@ import BottomNav from "./components/BottomNav";
 import ReportDetail from './components/ReportDetail';
 import Onboarding, { hasSeenOnboarding } from './components/Onboarding';
 import GpsPrimer from './components/GpsPrimer';
+import GpsBlocked from './components/GpsBlocked';
+import Faq from './components/Faq';
 import { IoCloseCircle } from "react-icons/io5";
 import './App.css';
 
@@ -89,15 +91,15 @@ function App() {
   // when permission has already been granted (or previously denied, where
   // showing "why" again won't help — we go straight to the clear error
   // message instead).
-  const [gpsPrimerOnReady, setGpsPrimerOnReady] = useState(null);
+  const [gpsPrimerOnReady, setGpsPrimerOnReady]   = useState(null);
+  const [gpsBlockedOnReady, setGpsBlockedOnReady] = useState(null);
 
   async function requestGpsFlow(onReady) {
     const state = await getGeolocationPermissionState();
     if (state === 'granted') {
       requestGeolocation(onReady);
     } else if (state === 'denied') {
-      alert('El permiso de ubicación está bloqueado. Actívalo en la configuración de tu navegador, o toca el mapa para seleccionar la ubicación manualmente.');
-      onReady?.();
+      setGpsBlockedOnReady(() => onReady);
     } else {
       setGpsPrimerOnReady(() => onReady);
     }
@@ -112,6 +114,12 @@ function App() {
   function handleGpsPrimerSkip() {
     const onReady = gpsPrimerOnReady;
     setGpsPrimerOnReady(null);
+    onReady?.();
+  }
+
+  function handleGpsBlockedClose() {
+    const onReady = gpsBlockedOnReady;
+    setGpsBlockedOnReady(null);
     onReady?.();
   }
 
@@ -153,6 +161,22 @@ function App() {
     flyToLocation: pinnedLocation,  // triggers street-zoom flyTo on GPS or tap
   };
 
+  // otherTabContent — the 'datos' and 'más' panels, shared between the mobile
+  // .content wrapper and desktop's right column (see .content { display: none }
+  // on desktop — without this, tapping those tabs did nothing on desktop since
+  // the right column always rendered the map + feed regardless of activeTab).
+  const otherTabContent = (
+    <>
+      {activeTab === 'datos' && (
+        <div className="placeholder-panel">
+          <h2>Dashboard de Municipios</h2>
+          <p>Próximamente.</p>
+        </div>
+      )}
+      {activeTab === 'más' && <Faq />}
+    </>
+  );
+
   // ── RENDER ──────────────────────────────────────────────────────────────────
   return (
     <div className="app">
@@ -174,6 +198,11 @@ function App() {
       {/* GpsPrimer — shown before the native GPS prompt when permission isn't decided yet */}
       {gpsPrimerOnReady && (
         <GpsPrimer onAllow={handleGpsPrimerAllow} onSkip={handleGpsPrimerSkip} />
+      )}
+
+      {/* GpsBlocked — shown instead of the primer when permission is already denied */}
+      {gpsBlockedOnReady && (
+        <GpsBlocked onClose={handleGpsBlockedClose} />
       )}
       <Header />
 
@@ -227,11 +256,15 @@ function App() {
 
         <div className="desktop-right">
           <div className="desktop-feed">
-            <div className="desktop-map-inline">
-              <MapView {...mapProps} />
-            </div>
-            {muniPinCallout}
-            <FeedScreen reports={reports} loading={loadingReports} error={reportsError} onDetails={setSelectedReport} onVote={handleReportUpdate} />
+            {(activeTab === 'datos' || activeTab === 'más') ? otherTabContent : (
+              <>
+                <div className="desktop-map-inline">
+                  <MapView {...mapProps} />
+                </div>
+                {muniPinCallout}
+                <FeedScreen reports={reports} loading={loadingReports} error={reportsError} onDetails={setSelectedReport} onVote={handleReportUpdate} />
+              </>
+            )}
           </div>
         </div>
 
@@ -242,17 +275,7 @@ function App() {
         {(activeTab === 'mapa' || activeTab === 'feed') && (
           <FeedScreen reports={reports} loading={loadingReports} error={reportsError} onDetails={setSelectedReport} onVote={handleReportUpdate} />
         )}
-        {activeTab === 'datos' && (
-          <div className="placeholder-panel">
-            <h2>Dashboard de Municipios</h2>
-            <p>Próximamente.</p>
-          </div>
-        )}
-        {activeTab === 'más' && (
-          <div className="placeholder-panel">
-            <h2>Más</h2>
-          </div>
-        )}
+        {otherTabContent}
       </div>
 
       <BottomNav
