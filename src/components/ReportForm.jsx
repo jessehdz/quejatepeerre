@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { CATEGORIES, CONTEXT_CHIPS, generateTitle, generateHashtags } from '../lib/constants';
 import { submitReport, uploadImage, validatePhoto } from '../lib/api';
-import { getMunicipality, getExactLocation, forwardGeocode } from '../lib/geocode';
+import { forwardGeocode } from '../lib/geocode';
 import './ReportForm.css';
 import { IoCloseCircle, IoCamera, IoImagesOutline, IoLocationSharp } from 'react-icons/io5';
 
@@ -40,22 +40,16 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
     const [nearbyDismissed, setNearbyDismissed] = useState(false);
     const showNearby = nearbyReports.length > 0 && !nearbyDismissed;
 
-    async function handleGpsInForm() {
-        if (!navigator.geolocation) { alert('GPS no disponible.'); return; }
+    // GPS here goes through the same App-level flow as the FAB (onRequestGps ->
+    // requestGpsFlow) so it gets the permission primer and the cross-browser
+    // retry/error handling in one place instead of duplicating it here. It
+    // updates App's pinnedLocation/municipality/exactLocation directly, which
+    // flow back in as this component's lng/lat/municipality/exactLocation props
+    // — no local override needed, unlike the manual address search below.
+    function handleGpsInForm() {
         setGpsLoading(true);
         setNearbyDismissed(false);
-        navigator.geolocation.getCurrentPosition(
-            async ({ coords: { longitude, latitude } }) => {
-                try {
-                    const [muni, exact] = await Promise.all([getMunicipality(longitude, latitude), getExactLocation(longitude, latitude)]);
-                    setOverrideLng(longitude); setOverrideLat(latitude);
-                    setOverrideMuni(muni); setOverrideExact(exact);
-                } catch (e) { console.error(e); }
-                setGpsLoading(false);
-            },
-            () => { alert('No se pudo obtener la ubicación. Verifica los permisos de GPS.'); setGpsLoading(false); },
-            { enableHighAccuracy: true, timeout: 10000 }
-        );
+        onRequestGps(() => setGpsLoading(false));
     }
 
     async function handleLocSearch() {

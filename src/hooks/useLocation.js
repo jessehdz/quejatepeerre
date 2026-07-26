@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { getMunicipality, getExactLocation } from '../lib/geocode';
+import { getCurrentPosition, gpsErrorMessage } from '../lib/geolocation';
 
 /* useLocation — manages all pin/geocoding state in one place.
     
@@ -51,30 +52,23 @@ export function useLocation() {
     // requestGeolocation — asks the browser for the device's GPS position, then calls resolveCoords with the result.
     // onReady — called once location resolves (success OR failure).
     //   - Use this to open the report form regardless of whether GPS succeeded, so the user is never stuck.
-    const requestGeolocation = useCallback((onReady) => {
-        if (!navigator.geolocation) {
-            onReady?.();
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const { longitude, latitude } = position.coords;
-                try {
-                    await resolveCoords(longitude, latitude);
-                } catch {
-                    // resolveCoords already handles its own errors internally;
-                    // this outer catch is just a safety net.
-                }
-                onReady?.();
-            },
-            () => {
-                // User denied permission or GPS timed out.
-                // Open the form anyway — they can still tap the map to pick a location.
-                alert('No se pudo obtener la ubicación. Puedes tocar el mapa para seleccionarla manualmente.');
-                onReady?.();
+    const requestGeolocation = useCallback(async (onReady) => {
+        try {
+            const position = await getCurrentPosition();
+            const { longitude, latitude } = position.coords;
+            try {
+                await resolveCoords(longitude, latitude);
+            } catch {
+                // resolveCoords already handles its own errors internally;
+                // this outer catch is just a safety net.
             }
-        );
+        } catch (err) {
+            // Permission denied, GPS unavailable, timed out, or unsupported.
+            // Open the form anyway — they can still tap the map to pick a location.
+            alert(gpsErrorMessage(err));
+        } finally {
+            onReady?.();
+        }
     }, [resolveCoords]);
 
     return {

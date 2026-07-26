@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from './lib/supabase';
 import { useLocation } from './hooks/useLocation';
+import { getGeolocationPermissionState } from './lib/geolocation';
 import Header from "./components/Header";
 import MapView from "./components/MapView";
 import FeedScreen from "./components/FeedScreen";
@@ -8,6 +9,7 @@ import ReportForm from "./components/ReportForm";
 import BottomNav from "./components/BottomNav";
 import ReportDetail from './components/ReportDetail';
 import Onboarding, { hasSeenOnboarding } from './components/Onboarding';
+import GpsPrimer from './components/GpsPrimer';
 import { IoCloseCircle } from "react-icons/io5";
 import './App.css';
 
@@ -79,9 +81,43 @@ function App() {
     resolveCoords(lng, lat);
   }
 
+  // ── GPS PRIMER ────────────────────────────────────────────────────────────
+  // Before triggering the browser's native GPS permission prompt, we show our
+  // own explanation of why the app wants location — this measurably improves
+  // grant rates on mobile browsers, where a bare permission popup with no
+  // context is a common reason users just tap "Block". We skip the primer
+  // when permission has already been granted (or previously denied, where
+  // showing "why" again won't help — we go straight to the clear error
+  // message instead).
+  const [gpsPrimerOnReady, setGpsPrimerOnReady] = useState(null);
+
+  async function requestGpsFlow(onReady) {
+    const state = await getGeolocationPermissionState();
+    if (state === 'granted') {
+      requestGeolocation(onReady);
+    } else if (state === 'denied') {
+      alert('El permiso de ubicación está bloqueado. Actívalo en la configuración de tu navegador, o toca el mapa para seleccionar la ubicación manualmente.');
+      onReady?.();
+    } else {
+      setGpsPrimerOnReady(() => onReady);
+    }
+  }
+
+  function handleGpsPrimerAllow() {
+    const onReady = gpsPrimerOnReady;
+    setGpsPrimerOnReady(null);
+    requestGeolocation(onReady);
+  }
+
+  function handleGpsPrimerSkip() {
+    const onReady = gpsPrimerOnReady;
+    setGpsPrimerOnReady(null);
+    onReady?.();
+  }
+
   // Called when the user taps the FAB (report button in the nav)
   function handleFabClick() {
-    requestGeolocation(() => setFormOpen(true));
+    requestGpsFlow(() => setFormOpen(true));
   }
 
   // ── STATS BANNER (desktop only) ─────────────────────────────────────────────
@@ -133,6 +169,11 @@ function App() {
       {/* Onboarding — shown once on first visit, never again */}
       {showOnboarding && (
         <Onboarding onDone={() => setShowOnboarding(false)} />
+      )}
+
+      {/* GpsPrimer — shown before the native GPS prompt when permission isn't decided yet */}
+      {gpsPrimerOnReady && (
+        <GpsPrimer onAllow={handleGpsPrimerAllow} onSkip={handleGpsPrimerSkip} />
       )}
       <Header />
 
@@ -229,7 +270,7 @@ function App() {
         lat={pinnedLocation?.lat}
         exactLocation={exactLocation}
         municipality={municipality}
-        onRequestGps={requestGeolocation}
+        onRequestGps={requestGpsFlow}
         reports={reports}
         onSubmit={() => {
           setFormOpen(false);
