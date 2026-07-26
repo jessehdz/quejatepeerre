@@ -1,0 +1,93 @@
+/* GpsPrimer — bottom sheet overlay, mobile-first (mirrors Onboarding) */
+
+.gps-primer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    z-index: 600;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.gps-primer-sheet {
+    width: 100%;
+    max-width: 480px;
+    background: var(--bg2);
+    border-radius: 28px 28px 0 0;
+    border-top: 2px solid var(--tile2);
+    padding: 28px 28px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    animation: gpsPrimerSlideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes gpsPrimerSlideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+}
+
+.gps-primer-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--tile);
+    color: var(--cel);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.gps-primer-title {
+    font-family: var(--font_main);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--cream);
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    margin-bottom: 12px;
+    max-width: 320px;
+}
+
+.gps-primer-body {
+    font-family: var(--font_content);
+    font-size: 14px;
+    color: var(--muted2);
+    line-height: 1.6;
+    margin-bottom: 24px;
+    max-width: 320px;
+}
+
+.gps-primer-allow {
+    width: 100%;
+    padding: 15px;
+    border-radius: 14px;
+    background: var(--red);
+    color: #fff;
+    font-family: var(--font_main);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    margin-bottom: 10px;
+}
+
+.gps-primer-allow:active { opacity: 0.85; }
+
+.gps-primer-skip {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: var(--font_main);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 8px 12px;
+}
