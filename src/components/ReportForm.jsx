@@ -2,8 +2,10 @@ import { useState, useMemo } from 'react';
 import { CATEGORIES, CONTEXT_CHIPS, generateTitle, generateHashtags } from '../lib/constants';
 import { submitReport, uploadImage, validatePhoto } from '../lib/api';
 import { forwardGeocode } from '../lib/geocode';
+import { supabase } from '../lib/supabase';
 import './ReportForm.css';
 import { IoCloseCircle, IoCamera, IoImagesOutline, IoLocationSharp } from 'react-icons/io5';
+import { TiArrowSortedUp } from 'react-icons/ti';
 
 function distanceMetres(lat1, lng1, lat2, lng2) {
     const R = 6371000;
@@ -14,7 +16,7 @@ function distanceMetres(lat1, lng1, lat2, lng2) {
 }
 const NEARBY_METRES = 30;
 
-function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, onSubmit, onRequestGps, reports = [] }) {
+function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, onSubmit, onRequestGps, reports = [], onVote }) {
 
     // ── LOCATION ───────────────────────────────────────────────────
     const [editingLoc, setEditingLoc]       = useState(false);
@@ -40,6 +42,13 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
     const [nearbyDismissed, setNearbyDismissed] = useState(false);
     const showNearby = nearbyReports.length > 0 && !nearbyDismissed;
 
+    // gpsVerified tracks whether resolvedLat/resolvedLng came from an actual
+    // device GPS ping rather than a typed-in address. Upvoting from the nearby
+    // list requires this — otherwise anyone could type an address near a
+    // report and vote without actually being there. Defaults to true because
+    // the form only opens after the FAB's own GPS request flow.
+    const [gpsVerified, setGpsVerified] = useState(true);
+
     // GPS here goes through the same App-level flow as the FAB (onRequestGps ->
     // requestGpsFlow) so it gets the permission primer and the cross-browser
     // retry/error handling in one place instead of duplicating it here. It
@@ -49,6 +58,10 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
     function handleGpsInForm() {
         setGpsLoading(true);
         setNearbyDismissed(false);
+        // Clear any manual override so the fresh GPS fix (via props) actually
+        // takes effect, and re-arm gpsVerified for the nearby upvote gate.
+        setOverrideLng(null); setOverrideLat(null); setOverrideMuni(null); setOverrideExact(null);
+        setGpsVerified(true);
         onRequestGps(() => setGpsLoading(false));
     }
 
@@ -60,10 +73,41 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
             if (!result) { setLocError('No encontramos esa dirección. Intenta con la calle, barrio, o municipio.'); return; }
             setOverrideLng(result.lng); setOverrideLat(result.lat);
             setOverrideMuni(result.municipality); setOverrideExact(result.exactLocation);
+            setGpsVerified(false); // manually entered address — can't upvote nearby reports until GPS confirms it
             setEditingLoc(false); setLocQuery('');
         } catch (e) {
             setLocError('Error buscando la dirección. Verifica tu conexión e intenta de nuevo.');
         } finally { setLocLoading(false); }
+    }
+
+    // ── NEARBY UPVOTE ──────────────────────────────────────────────
+    const [votingNearbyIds, setVotingNearbyIds] = useState(new Set());
+    const [votedNearbyIds, setVotedNearbyIds]   = useState(new Set());
+
+    async function handleNearbyVote(report) {
+        if (!gpsVerified || votedNearbyIds.has(report.id) || votingNearbyIds.has(report.id)) return;
+        setVotingNearbyIds(prev => new Set(prev).add(report.id));
+        try {
+            const { data, error } = await supabase.rpc('increment_vote', { report_id: report.id });
+            if (error) {
+                // RPC not available — fallback: read fresh count then update
+                const { data: fresh } = await supabase
+                    .from('reports').select('vote_count').eq('id', report.id).single();
+                const current = fresh?.vote_count ?? report.vote_count ?? 0;
+                const { error: ue } = await supabase
+                    .from('reports').update({ vote_count: current + 1 }).eq('id', report.id);
+                if (!ue) {
+                    setVotedNearbyIds(prev => new Set(prev).add(report.id));
+                    onVote?.({ ...report, vote_count: current + 1 });
+                } else console.error('Vote error:', ue);
+            } else {
+                setVotedNearbyIds(prev => new Set(prev).add(report.id));
+                onVote?.({ ...report, vote_count: typeof data === 'number' ? data : (report.vote_count || 0) + 1 });
+            }
+        } catch (e) { console.error(e); }
+        finally {
+            setVotingNearbyIds(prev => { const next = new Set(prev); next.delete(report.id); return next; });
+        }
     }
 
     // ── CATEGORY + SUBCATEGORY ─────────────────────────────────────
@@ -254,10 +298,17 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                         Encontramos {nearbyReports.length} reporte{nearbyReports.length !== 1 ? 's' : ''} a menos de 100 pies de tu ubicación.
                         ¿Es el mismo problema? Vota "Yo También" para amplificarlo en vez de crear un duplicado.
                     </p>
+                    {!gpsVerified && (
+                        <p className="nearby-gps-warning">
+                            📍 Tu ubicación fue escrita a mano — toca "GPS" arriba para confirmarla y poder votar.
+                        </p>
+                    )}
                     <div className="nearby-list">
                         {nearbyReports.map(r => {
                             const catData = CATEGORIES.find(c => c.key === r.category) || CATEGORIES[0];
                             const daysOpen = r.created_at ? Math.floor((Date.now() - new Date(r.created_at)) / 86400000) : 0;
+                            const voted   = votedNearbyIds.has(r.id);
+                            const voting  = votingNearbyIds.has(r.id);
                             return (
                                 <div key={r.id} className="nearby-card">
                                     {r.image_url && <img src={r.image_url} alt="" className="nearby-card-photo" />}
@@ -270,6 +321,16 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                                             {daysOpen === 0 ? 'Hoy' : `${daysOpen} días abierto`} · {r.vote_count || 0} votos
                                         </div>
                                     </div>
+                                    <button
+                                        className={`nearby-upvote-btn${voted ? ' voted' : ''}`}
+                                        onClick={() => handleNearbyVote(r)}
+                                        disabled={!gpsVerified || voted || voting}
+                                        title={!gpsVerified ? 'Confirma tu ubicación con GPS para votar' : voted ? '¡Ya votaste!' : 'Yo también'}
+                                        aria-label="Yo también"
+                                    >
+                                        <TiArrowSortedUp size={16} />
+                                        <span className="nearby-upvote-count">{r.vote_count || 0}</span>
+                                    </button>
                                 </div>
                             );
                         })}
@@ -279,9 +340,6 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                             No es el mismo — crear nuevo reporte
                         </button>
                     </div>
-                    <p className="nearby-note">
-                        Para votar "Yo También" en un reporte existente, cierra este formulario y toca la tarjeta en el feed.
-                    </p>
                 </div>
             </>
         );

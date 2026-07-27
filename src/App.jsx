@@ -295,6 +295,7 @@ function App() {
         municipality={municipality}
         onRequestGps={requestGpsFlow}
         reports={reports}
+        onVote={handleReportUpdate}
         onSubmit={() => {
           setFormOpen(false);
           clearLocation();
