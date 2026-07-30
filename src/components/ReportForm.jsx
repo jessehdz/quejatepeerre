@@ -149,6 +149,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
     const [success, setSuccess]               = useState(false);
     const [savedImageURL, setSavedImageURL]   = useState(null);
     const [errors, setErrors]                 = useState({});
+    const [copied, setCopied]                 = useState(false);
 
     const isValid = resolvedLat && category && subcategory && selectedChips.length > 0;
 
@@ -205,9 +206,6 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
         ].filter(l => l !== null).join('\n');
 
         function handleClose() { onSubmit(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const [copied, setCopied] = useState(false);
 
         async function handleShare() {
             if (navigator.share) {
