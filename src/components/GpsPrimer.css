@@ -4,7 +4,7 @@
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.72);
-    z-index: 600;
+    z-index: 1600;
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -12,7 +12,7 @@
 
 .gps-primer-sheet {
     width: 100%;
-    max-width: 480px;
+    max-width: 520px;
     background: var(--bg2);
     border-radius: 28px 28px 0 0;
     border-top: 2px solid var(--tile2);

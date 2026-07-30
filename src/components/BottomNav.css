@@ -57,7 +57,7 @@
 .nav-fab {
     width: 55px;
     height: 55px;
-    border-radius: 50%;
+    border-radius: 9px;
     background: var(--red);
     color: var(--cream);
     font-size: 24px;
