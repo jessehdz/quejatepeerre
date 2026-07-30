@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { CATEGORIES, generateHashtags } from '../lib/constants';
-import { IoArrowBack, IoLocationSharp, IoCalendarOutline, IoCheckmarkCircle } from 'react-icons/io5';
+import { IoArrowBack, IoLocationSharp, IoCalendarOutline, IoCheckmarkCircle, IoShareSocial } from 'react-icons/io5';
 import { TiArrowSortedUp } from 'react-icons/ti';
 import './ReportDetail.css';
 
@@ -22,9 +22,9 @@ const STATUS_OPTIONS = [
 ];
 
 const STATUS_BG = {
-    'ABIERTO':        '#AA2214',
-    'EN REPARACIÓN':  '#B05610',
-    'RESUELTO':       '#2A602A',
+    'ABIERTO':        'rgba(170,34,20,0.85)',
+    'EN REPARACIÓN':  'rgba(176,86,14,0.85)',
+    'RESUELTO':       'rgba(42,96,42,0.85)',
 };
 
 const PHOTO_FALLBACK = {
@@ -202,29 +202,24 @@ function ReportDetail({ report, onBack, onUpdate }) {
                     <div className="rd-cat-pill">
                         <span className="rd-cat-left" style={{ background: catData.color }}>
                             <span className="rd-cat-icon">{CatIcon && <CatIcon />}</span>
-                            {catData.label.toUpperCase()}
                         </span>
                         {subcategory && (
                             <span className="rd-cat-right">{subcategory.toUpperCase()}</span>
                         )}
                     </div>
-                    <span className="rd-status-badge"
-                        style={{ background: STATUS_BG[STATUS_MAP[currentStatus]] || STATUS_BG['ABIERTO'] }}>
-                        <span className="rd-status-dot" />
-                        {STATUS_MAP[currentStatus] || 'ABIERTO'}
-                    </span>
-                </div>
 
-                <div className="rd-hero-bottom">
-                    <div className="rd-report-num">{reportNum}</div>
-                    <div className="rd-days-hero">
-                        <span className="rd-days-num" style={{ color: daysColor }}>
-                            {resolved ? '✓' : daysOpen}
+                    <span className="rd-status" style={{ background: STATUS_BG[STATUS_MAP[currentStatus]] || STATUS_BG['ABIERTO'] }}>
+                        <span className="rd-status-label">{STATUS_MAP[currentStatus] || 'ABIERTO'}</span>
+
+                        <span className="rd-days-row">
+                            <span className="rd-days-num" style={{ color: daysColor }}>
+                                {resolved ? '✓' : daysOpen}
+                            </span>
+                            <span className="rd-days-word">
+                                {resolved ? 'RESUELTO' : daysOpen === 1 ? 'DÍA' : 'DÍAS'}
+                            </span>
                         </span>
-                        <span className="rd-days-word">
-                            {resolved ? 'RESUELTO' : daysOpen === 1 ? 'DÍA ABIERTO' : 'DÍAS ABIERTO'}
-                        </span>
-                    </div>
+                    </span>
                 </div>
             </div>
 
@@ -232,6 +227,10 @@ function ReportDetail({ report, onBack, onUpdate }) {
             <div className="rd-body">
 
                 <h1 className="rd-title">{title}</h1>
+                <div className="rd-title-meta">
+                    <span>{catData.label}</span>
+                    <span className="rd-title-num">· {reportNum}</span>
+                </div>
 
                 <div className="rd-meta-row">
                     {(exact_location || municipality) && (
@@ -289,8 +288,8 @@ function ReportDetail({ report, onBack, onUpdate }) {
                         onClick={handleVote}
                         disabled={voted || voting}
                     >
-                        <TiArrowSortedUp size={20} />
-                        {voted ? '¡Contado!' : voting ? '...' : 'Yo También'}
+                        <TiArrowSortedUp size={15} />
+                        <span>{voted ? '¡Contado!' : voting ? '...' : 'Yo También'}</span>
                     </button>
                 </div>
 
@@ -304,13 +303,13 @@ function ReportDetail({ report, onBack, onUpdate }) {
                         {STATUS_OPTIONS.map(opt => (
                             <button
                                 key={opt.value}
-                                className={`rd-status-btn${currentStatus === opt.value ? ' active' : ''}`}
+                                className={`btn rd-action-btn${currentStatus === opt.value ? ' active' : ''}`}
                                 style={{ '--s-color': opt.color }}
                                 onClick={() => handleStatusChange(opt.value)}
                                 disabled={updatingStatus}
                             >
-                                {currentStatus === opt.value && <IoCheckmarkCircle size={13} />}
-                                {opt.label}
+                                {currentStatus === opt.value && <IoCheckmarkCircle size={13} className="rd-action-icon" />}
+                                <span className="rd-action-label">{opt.label}</span>
                             </button>
                         ))}
                     </div>
@@ -333,12 +332,15 @@ function ReportDetail({ report, onBack, onUpdate }) {
                     <div className="rd-share-preview">
                         <p className="rd-share-text">{shareMessage}</p>
                     </div>
-                    <button className="rd-share-main-btn" onClick={handleShare}>
-                        {copied
-                            ? '✓ Texto copiado'
-                            : image_url
-                                ? '📱 Compartir por mensaje (con foto)'
-                                : '📱 Compartir por mensaje'}
+                    <button className="btn rd-action-btn primary rd-share-btn" onClick={handleShare}>
+                        {!copied && <IoShareSocial size={15} className="rd-action-icon" />}
+                        <span className="rd-action-label">
+                            {copied
+                                ? 'Texto copiado ✓'
+                                : image_url
+                                    ? 'Compartir por mensaje (con foto)'
+                                    : 'Compartir por mensaje'}
+                        </span>
                     </button>
                     {!navigator.share && !copied && (
                         <p className="rd-share-hint">
