@@ -89,6 +89,10 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
     const [votingNearbyIds, setVotingNearbyIds] = useState(new Set());
     const [votedNearbyIds, setVotedNearbyIds]   = useState(new Set());
 
+    // Tapping a nearby card pops out its photo full-size so people can
+    // actually see what they'd be upvoting instead of a thumbnail guess.
+    const [previewReport, setPreviewReport] = useState(null);
+
     async function handleNearbyVote(report) {
         if (!gpsVerified || votedNearbyIds.has(report.id) || votingNearbyIds.has(report.id)) return;
         setVotingNearbyIds(prev => new Set(prev).add(report.id));
@@ -306,6 +310,11 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
 
     // ── NEARBY SCREEN ──────────────────────────────────────────────
     if (showNearby) {
+        const previewCatData = previewReport
+            ? (CATEGORIES.find(c => c.key === previewReport.category) || CATEGORIES[0])
+            : null;
+        const PreviewCatIcon = previewCatData?.icon;
+
         return (
             <>
                 <div className="form-backdrop" onClick={onClose} />
@@ -332,7 +341,11 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                             const voted   = votedNearbyIds.has(r.id);
                             const voting  = votingNearbyIds.has(r.id);
                             return (
-                                <div key={r.id} className="nearby-card">
+                                <div
+                                    key={r.id}
+                                    className={`nearby-card${r.image_url ? ' clickable' : ''}`}
+                                    onClick={() => r.image_url && setPreviewReport(r)}
+                                >
                                     {r.image_url && <img src={r.image_url} alt="" className="nearby-card-photo" />}
                                     <div className="nearby-card-body">
                                         {/* Same split pill as ReportCard's .rc-cat-pill — icon chip +
@@ -358,7 +371,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                                         same reports array/field ReportCard and ReportDetail render. */}
                                     <button
                                         className={`nearby-vote-block${voted ? ' voted' : ''}`}
-                                        onClick={() => handleNearbyVote(r)}
+                                        onClick={e => { e.stopPropagation(); handleNearbyVote(r); }}
                                         disabled={!gpsVerified || voted || voting}
                                         title={!gpsVerified ? 'Confirma tu ubicación con GPS para votar' : voted ? '¡Ya votaste!' : 'Yo también'}
                                         aria-label="Yo también"
@@ -376,6 +389,41 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                         </button>
                     </div>
                 </div>
+
+                {/* Photo pop-out — bigger view of the report so people can actually
+                    see what they'd be upvoting before tapping "Yo también". */}
+                {previewReport && (
+                    <div className="nearby-preview-backdrop" onClick={() => setPreviewReport(null)}>
+                        <div className="nearby-preview-sheet" onClick={e => e.stopPropagation()}>
+                            <button className="nearby-preview-close" onClick={() => setPreviewReport(null)}>
+                                <IoCloseCircle size={28} />
+                            </button>
+                            <img src={previewReport.image_url} alt="" className="nearby-preview-photo" />
+                            <div className="nearby-preview-info">
+                                <div className="nearby-cat-pill">
+                                    <span className="nearby-cat-left" style={{ background: previewCatData.color }}>
+                                        {PreviewCatIcon && <PreviewCatIcon />}
+                                        <span className="nearby-cat-label">{previewCatData.label.toUpperCase()}</span>
+                                    </span>
+                                    {previewReport.subcategory && (
+                                        <span className="nearby-cat-right">{previewReport.subcategory.toUpperCase()}</span>
+                                    )}
+                                </div>
+                                <div className="nearby-preview-title">{previewReport.title}</div>
+                                <button
+                                    className={`nearby-vote-block nearby-preview-vote${votedNearbyIds.has(previewReport.id) ? ' voted' : ''}`}
+                                    onClick={() => handleNearbyVote(previewReport)}
+                                    disabled={!gpsVerified || votedNearbyIds.has(previewReport.id) || votingNearbyIds.has(previewReport.id)}
+                                    title={!gpsVerified ? 'Confirma tu ubicación con GPS para votar' : votedNearbyIds.has(previewReport.id) ? '¡Ya votaste!' : 'Yo también'}
+                                    aria-label="Yo también"
+                                >
+                                    <Megaphone size={20} />
+                                    <span className="nearby-vote-count">{previewReport.vote_count || 0}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </>
         );
     }
