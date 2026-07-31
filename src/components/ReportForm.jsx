@@ -417,7 +417,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                                     title={!gpsVerified ? 'Confirma tu ubicación con GPS para votar' : votedNearbyIds.has(previewReport.id) ? '¡Ya votaste!' : 'Yo también'}
                                     aria-label="Yo también"
                                 >
-                                    <Megaphone size={20} />
+                                    <Megaphone size={20} />Si es el mismo problema, ¡Yo también! 
                                     <span className="nearby-vote-count">{previewReport.vote_count || 0}</span>
                                 </button>
                             </div>
