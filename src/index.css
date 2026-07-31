@@ -51,6 +51,9 @@
   /* --font_main: 'Sarpanch', sans-serif; */
   --font_content: 'Noto Sans HK', sans-serif;
 
+  /* component radius */
+  --r-comp: 8px;
+
 }
 
 /* Base body styles */

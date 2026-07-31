@@ -16,6 +16,11 @@ function distanceMetres(lat1, lng1, lat2, lng2) {
 }
 const NEARBY_METRES = 30;
 
+// Camera capture only for now — the gallery-picker markup below is kept
+// (not deleted) so it's a one-line flip to bring back once camera-only
+// is confirmed to work well.
+const GALLERY_UPLOAD_ENABLED = false;
+
 function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, onSubmit, onRequestGps, reports = [], onVote }) {
 
     // ── LOCATION ───────────────────────────────────────────────────
@@ -134,14 +139,15 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
     const [photoPreview, setPhotoPreview]     = useState(null);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
     const [photoError, setPhotoError]         = useState(null);
+    const [photoConsent, setPhotoConsent]     = useState(false);
 
     function handlePhotoChange(e) {
         const file = e.target.files[0]; if (!file) return;
         const err = validatePhoto(file); if (err) { setPhotoError(err); e.target.value = ''; return; }
-        setPhotoError(null); setPhoto(file);
+        setPhotoError(null); setPhoto(file); setPhotoConsent(false);
         const reader = new FileReader(); reader.onloadend = () => setPhotoPreview(reader.result); reader.readAsDataURL(file);
     }
-    function handleRemovePhoto() { setPhoto(null); setPhotoPreview(null); setPhotoError(null); }
+    function handleRemovePhoto() { setPhoto(null); setPhotoPreview(null); setPhotoError(null); setPhotoConsent(false); }
 
     // ── SUBMISSION ─────────────────────────────────────────────────
     const [submitting, setSubmitting]         = useState(false);
@@ -151,14 +157,30 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
     const [errors, setErrors]                 = useState({});
     const [copied, setCopied]                 = useState(false);
 
-    const isValid = resolvedLat && category && subcategory && selectedChips.length > 0;
+    // Live checklist of missing required fields — drives isValid and the
+    // reminder shown above the submit button so users see what's left
+    // without having to guess why the button is disabled.
+    const missingItems = useMemo(() => {
+        const items = [];
+        if (!resolvedLat)                         items.push('Ubicación');
+        if (!category)                            items.push('Categoría');
+        if (category && !subcategory)             items.push('Subcategoría');
+        if (subcategory && !selectedChips.length) items.push('Descripción de la situación');
+        if (!photo)                               items.push('Foto de evidencia');
+        else if (!photoConsent)                   items.push('Confirmar que la foto no tiene información sensible');
+        return items;
+    }, [resolvedLat, category, subcategory, selectedChips, photo, photoConsent]);
+
+    const isValid = missingItems.length === 0;
 
     function validate() {
         const e = {};
-        if (!resolvedLat)          e.location    = 'Selecciona una ubicación.';
-        if (!category)             e.category    = 'Selecciona una categoría.';
-        if (!subcategory)          e.subcategory = 'Selecciona una subcategoría.';
-        if (!selectedChips.length) e.chips       = 'Selecciona al menos una descripción.';
+        if (!resolvedLat)          e.location      = 'Selecciona una ubicación.';
+        if (!category)             e.category      = 'Selecciona una categoría.';
+        if (!subcategory)          e.subcategory   = 'Selecciona una subcategoría.';
+        if (!selectedChips.length) e.chips         = 'Selecciona al menos una descripción.';
+        if (!photo)                e.photo         = 'Debes tomar una foto de evidencia.';
+        else if (!photoConsent)    e.photoConsent  = 'Debes confirmar que la foto no incluye información sensible.';
         setErrors(e); return Object.keys(e).length === 0;
     }
 
@@ -451,30 +473,50 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
 
                 {/* PHOTO */}
                 <div className="form-field">
-                    <label className="form-label">FOTO DE EVIDENCIA <span className="form-label-opt">(opcional)</span></label>
+                    <label className="form-label">FOTO DE EVIDENCIA</label>
+                        <p className="photo-note">No subas fotos de personas o información privada.</p>
+
                     {photoPreview ? (
-                        <div className="photo-preview-wrap">
-                            <img src={photoPreview} alt="Evidencia" className="photo-preview" />
-                            <button className="remove-photo-btn" onClick={handleRemovePhoto}><IoCloseCircle size={28} /></button>
-                        </div>
+                        <>
+                            <div className="photo-preview-wrap">
+                                <img src={photoPreview} alt="Evidencia" className="photo-preview" />
+                                <button className="remove-photo-btn" onClick={handleRemovePhoto}><IoCloseCircle size={28} /></button>
+                            </div>
+                            <label className="photo-consent-check">
+                                <input type="checkbox" checked={photoConsent}
+                                    onChange={e => setPhotoConsent(e.target.checked)} />
+                                <span>Confirmo que esta foto no muestra a otra persona ni información que pueda
+                                    identificar a alguien (placas de carro, rostros, documentos, direcciones
+                                    específicas, u otra información sensible).</span>
+                            </label>
+                            {errors.photoConsent && <p className="form-error">{errors.photoConsent}</p>}
+                        </>
                     ) : (
                         <div className="photo-upload-group">
                             <label className="photo-upload-btn camera-btn">
                                 <IoCamera size={20} /><span className="photo-upload-label">Tomar foto</span>
                                 <input type="file" accept="image/*" capture="environment" onChange={handlePhotoChange} style={{ display: 'none' }} />
                             </label>
-                            <label className="photo-upload-btn gallery-btn">
-                                <IoImagesOutline size={18} /><span className="photo-upload-label">Galería</span>
-                                <input type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
-                            </label>
+                            {GALLERY_UPLOAD_ENABLED && (
+                                <label className="photo-upload-btn gallery-btn">
+                                    <IoImagesOutline size={18} /><span className="photo-upload-label">Galería</span>
+                                    <input type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
+                                </label>
+                            )}
                         </div>
                     )}
+                    {errors.photo && <p className="form-error">{errors.photo}</p>}
                     {photoError && <p className="form-error photo-field-error">{photoError}</p>}
-                    <p className="photo-note">No subas fotos de personas o información privada.</p>
                 </div>
 
                 <p className="anon-notice">Este reporte es 100% anónimo. No se requiere cuenta.</p>
                 {submitError && <p className="form-error" style={{ marginBottom: 12 }}>{submitError}</p>}
+
+                {missingItems.length > 0 && (
+                    <div className="missing-notice">
+                        <strong>Falta completar:</strong> {missingItems.join(', ')}.
+                    </div>
+                )}
 
                 <button className={`submit-btn${!isValid || submitting ? ' disabled' : ''}`}
                     onClick={handleSubmit} disabled={!isValid || submitting}>
