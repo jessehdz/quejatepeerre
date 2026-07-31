@@ -809,26 +809,31 @@
     margin-bottom: 20px;
 }
 
+/* Border-radius and pill/vote language mirror ReportCard's .rc-article
+   (18px) and .rc-upvote so this list reads as the same design system,
+   just in a compact row instead of a full photo card. */
 .nearby-card {
     display: flex;
     align-items: stretch;
     gap: 10px;
     background: var(--bg2);
     border: 1px solid var(--tile2);
-    border-radius: 12px;
+    border-radius: 18px;
     overflow: hidden;
+    padding: 8px;
 }
 
 .nearby-card-photo {
     width: 80px;
     height: 80px;
     object-fit: cover;
+    border-radius: var(--r-comp);
     flex-shrink: 0;
 }
 
 .nearby-card-body {
     flex: 1;
-    padding: 10px 12px 10px 0;
+    padding: 2px 4px 2px 0;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -842,13 +847,13 @@
     letter-spacing: .1em;
     color: #fff;
     padding: 2px 8px;
-    border-radius: 100px;
+    border-radius: var(--r-pill);
     width: fit-content;
 }
 
 .nearby-card-title {
-    font-family: var(--font_main);
-    font-size: 12px;
+    font-family: var(--font_content);
+    font-size: 12.5px;
     font-weight: 700;
     color: var(--cream);
     line-height: 1.3;
@@ -857,48 +862,61 @@
     text-overflow: ellipsis;
 }
 
+.nearby-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: auto;
+}
+
 .nearby-card-meta {
-    font-family: var(--font_main);
+    font-family: var(--font_nums);
     font-size: 9px;
     color: var(--muted);
     letter-spacing: .04em;
+    text-transform: uppercase;
 }
 
+/* Same pill shape, background, and border as ReportCard's .rc-upvote —
+   vote_count here comes from the same reports array/field it does. */
 .nearby-upvote-btn {
-    display: flex;
-    flex-direction: column;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 3px;
-    width: 52px;
+    gap: 5px;
+    height: 26px;
+    padding: 0 9px;
     flex-shrink: 0;
-    background: color-mix(in srgb, var(--cel) 10%, transparent);
-    border: none;
-    border-left: 1px solid var(--tile2);
-    color: var(--cel);
+    border-radius: var(--r-pill);
     cursor: pointer;
+    font-family: var(--font_nums);
+    background: rgba(255,255,255,0.12);
+    border: 1.5px solid rgba(255,255,255,0.28);
+    color: var(--cream);
     transition: background .15s, opacity .15s, color .15s;
 }
 
 .nearby-upvote-btn:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--cel) 20%, transparent);
+    background: rgba(255,255,255,0.2);
 }
 
 .nearby-upvote-btn:disabled {
-    opacity: .35;
+    opacity: .45;
     cursor: not-allowed;
 }
 
 .nearby-upvote-btn.voted {
-    color: var(--red);
-    background: color-mix(in srgb, var(--red) 12%, transparent);
+    background: var(--red);
+    border-color: var(--red);
+    color: #FAF5E9;
 }
 
 .nearby-upvote-count {
-    font-family: var(--font_main);
+    font-family: 'Spline Sans Mono', monospace;
+    font-weight: 600;
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .02em;
+    min-width: 14px;
+    text-align: center;
 }
 
 .nearby-actions {

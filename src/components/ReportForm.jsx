@@ -5,7 +5,7 @@ import { forwardGeocode } from '../lib/geocode';
 import { supabase } from '../lib/supabase';
 import './ReportForm.css';
 import { IoCloseCircle, IoCamera, IoImagesOutline, IoLocationSharp } from 'react-icons/io5';
-import { TiArrowSortedUp } from 'react-icons/ti';
+import { Megaphone } from 'lucide-react';
 
 function distanceMetres(lat1, lng1, lat2, lng2) {
     const R = 6371000;
@@ -259,13 +259,14 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                     <div className="form-handle" />
 
                     <div className="success-logo">
-                        <span className="success-logo-red">Quéjate</span>
-                        <span className="success-logo-blue">PeErre</span>
+                        <Megaphone size={14} fill="white" strokeWidth={0} />
+                    <span>Quéjate<span className='logo-red'>Pe</span><span className='logo-cel-blue'>Erre</span></span>
+                
                     </div>
 
-                    <div className="success-check">✓</div>
+                    <div className="success-check"></div>
                     <h3 className="success-title">Tu reporte fue enviado</h3>
-                    <p className="success-sub">Anónimo · Visible para todos · Gratis</p>
+                    <p className="success-sub">Anónimo · Visible para todos</p>
 
                     {savedImageURL && <img src={savedImageURL} alt="Evidencia" className="success-photo" />}
 
@@ -311,7 +312,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                 <div className="form-panel">
                     <div className="form-handle" />
                     <div className="form-header">
-                        <h2 className="form-title">Ya hay reportes aquí</h2>
+                        <h2 className="form-title">Ya hay reportes cercanos</h2>
                         <button className="close-btn" onClick={onClose}><IoCloseCircle size={28} /></button>
                     </div>
                     <p className="nearby-intro">
@@ -337,27 +338,31 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                                             {catData.label.toUpperCase()} · {r.subcategory?.toUpperCase()}
                                         </div>
                                         <div className="nearby-card-title">{r.title}</div>
-                                        <div className="nearby-card-meta">
-                                            {daysOpen === 0 ? 'Hoy' : `${daysOpen} días abierto`} · {r.vote_count || 0} votos
+                                        <div className="nearby-card-footer">
+                                            <span className="nearby-card-meta">
+                                                {daysOpen === 0 ? 'Hoy' : `${daysOpen} días abierto`}
+                                            </span>
+                                            {/* vote_count comes straight from the same reports array/field
+                                                ReportCard and ReportDetail render — single source of truth. */}
+                                            <button
+                                                className={`nearby-upvote-btn${voted ? ' voted' : ''}`}
+                                                onClick={() => handleNearbyVote(r)}
+                                                disabled={!gpsVerified || voted || voting}
+                                                title={!gpsVerified ? 'Confirma tu ubicación con GPS para votar' : voted ? '¡Ya votaste!' : 'Yo también'}
+                                                aria-label="Yo también"
+                                            >
+                                                <Megaphone size={14} />
+                                                <span className="nearby-upvote-count">{r.vote_count || 0}</span>
+                                            </button>
                                         </div>
                                     </div>
-                                    <button
-                                        className={`nearby-upvote-btn${voted ? ' voted' : ''}`}
-                                        onClick={() => handleNearbyVote(r)}
-                                        disabled={!gpsVerified || voted || voting}
-                                        title={!gpsVerified ? 'Confirma tu ubicación con GPS para votar' : voted ? '¡Ya votaste!' : 'Yo también'}
-                                        aria-label="Yo también"
-                                    >
-                                        <TiArrowSortedUp size={16} />
-                                        <span className="nearby-upvote-count">{r.vote_count || 0}</span>
-                                    </button>
                                 </div>
                             );
                         })}
                     </div>
                     <div className="nearby-actions">
                         <button className="nearby-btn-new" onClick={() => setNearbyDismissed(true)}>
-                            No es el mismo — crear nuevo reporte
+                            <Megaphone size={16} /> No es el mismo — crear nuevo reporte
                         </button>
                     </div>
                 </div>
