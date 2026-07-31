@@ -14,6 +14,10 @@ export function hasSeenOnboarding() {
     return localStorage.getItem('qpr_onboarded') === '1';
 }
 
+export function markOnboardingSeen() {
+    localStorage.setItem('qpr_onboarded', '1');
+}
+
 function Onboarding({ onDone }) {
     const [slide, setSlide] = useState(0);
 
@@ -34,10 +38,9 @@ function Onboarding({ onDone }) {
         },
         {
             emoji: <Megaphone size={48} color="var(--cream)" strokeWidth={2.5} />,
-            title: '"Yo también"',
-            body: `Si ya existe un reporte en tu área, vota "Yo también" para amplificarlo.\nCuantos más votos, más presión al municipio.`,
-            sub: 'Tu nombre nunca aparece.',
-            cta: '¡Vamos!',
+            title: 'Empieza aquí',
+            body: `Toca el botón rojo abajo para reportar un problema en tu área.\nAsí de fácil.`,
+            sub: '',
         },
     ];
 
@@ -45,22 +48,20 @@ function Onboarding({ onDone }) {
     const isLast = slide === slides.length - 1;
 
     function handleCta() {
-        if (isLast) {
-            localStorage.setItem('qpr_onboarded', '1');
-            onDone();
-        } else {
-            setSlide(s => s + 1);
-        }
+        setSlide(s => s + 1);
     }
 
     function handleSkip() {
-        localStorage.setItem('qpr_onboarded', '1');
+        markOnboardingSeen();
         onDone();
     }
 
     return (
-        <div className="ob-backdrop">
+        <div className={`ob-backdrop ${isLast ? 'ob-backdrop-final' : ''}`}>
             <div className="ob-sheet">
+
+                {/* Close — always available, exits onboarding entirely */}
+                <button className="ob-close" onClick={handleSkip} aria-label="Cerrar">×</button>
 
                 {/* Progress dots */}
                 <div className="ob-dots">
@@ -90,16 +91,19 @@ function Onboarding({ onDone }) {
                 </p>
                 <p className="ob-sub">{current.sub}</p>
 
-                {/* CTA button */}
-                <button className="ob-cta" onClick={handleCta}>
-                    {current.cta}
-                </button>
-
-                {/* Skip — only on slides 1 and 2 */}
+                {/* CTA button — last slide has no CTA, the real FAB below is the CTA */}
                 {!isLast && (
-                    <button className="ob-skip" onClick={handleSkip}>
-                        Saltar
+                    <button className="ob-cta" onClick={handleCta}>
+                        {current.cta}
                     </button>
+                )}
+
+                {/* "Start here" pointer to the real FAB, revealed above the dimmed backdrop */}
+                {isLast && (
+                    <div className="ob-fab-pointer">
+                        <span className="ob-fab-label">Empieza aquí</span>
+                        <span className="ob-fab-arrow">↓</span>
+                    </div>
                 )}
 
             </div>

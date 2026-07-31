@@ -8,7 +8,7 @@ import FeedScreen from "./components/FeedScreen";
 import ReportForm from "./components/ReportForm";
 import BottomNav from "./components/BottomNav";
 import ReportDetail from './components/ReportDetail';
-import Onboarding, { hasSeenOnboarding } from './components/Onboarding';
+import Onboarding, { hasSeenOnboarding, markOnboardingSeen } from './components/Onboarding';
 import GpsPrimer from './components/GpsPrimer';
 import GpsBlocked from './components/GpsBlocked';
 import Faq from './components/Faq';
@@ -281,6 +281,13 @@ function App() {
       <BottomNav
         activeTab={activeTab}
         onTabChange={(tab) => {
+          // The real nav only becomes reachable once onboarding is on its
+          // last slide (backdrop drops below it) — tapping it there stands
+          // in for the removed CTA, so dismiss onboarding for good.
+          if (showOnboarding) {
+            markOnboardingSeen();
+            setShowOnboarding(false);
+          }
           if (tab === 'report') handleFabClick();
           else setActiveTab(tab);
         }}
