@@ -340,6 +340,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                                         <div className="nearby-cat-pill">
                                             <span className="nearby-cat-left" style={{ background: catData.color }}>
                                                 {CatIcon && <CatIcon />}
+                                                <span className="nearby-cat-label">{catData.label.toUpperCase()}</span>
                                             </span>
                                             {r.subcategory && (
                                                 <span className="nearby-cat-right">{r.subcategory.toUpperCase()}</span>
@@ -350,20 +351,21 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                                             <span className="nearby-card-meta">
                                                 {daysOpen === 0 ? 'Hoy' : `${daysOpen} días abierto`}
                                             </span>
-                                            {/* vote_count comes straight from the same reports array/field
-                                                ReportCard and ReportDetail render — single source of truth. */}
-                                            <button
-                                                className={`nearby-upvote-btn${voted ? ' voted' : ''}`}
-                                                onClick={() => handleNearbyVote(r)}
-                                                disabled={!gpsVerified || voted || voting}
-                                                title={!gpsVerified ? 'Confirma tu ubicación con GPS para votar' : voted ? '¡Ya votaste!' : 'Yo también'}
-                                                aria-label="Yo también"
-                                            >
-                                                <Megaphone size={14} />
-                                                <span className="nearby-upvote-count">{r.vote_count || 0}</span>
-                                            </button>
                                         </div>
                                     </div>
+                                    {/* Separate block to the right of the whole card — bigger tap
+                                        target than an inline pill. vote_count comes straight from the
+                                        same reports array/field ReportCard and ReportDetail render. */}
+                                    <button
+                                        className={`nearby-vote-block${voted ? ' voted' : ''}`}
+                                        onClick={() => handleNearbyVote(r)}
+                                        disabled={!gpsVerified || voted || voting}
+                                        title={!gpsVerified ? 'Confirma tu ubicación con GPS para votar' : voted ? '¡Ya votaste!' : 'Yo también'}
+                                        aria-label="Yo también"
+                                    >
+                                        <Megaphone size={20} />
+                                        <span className="nearby-vote-count">{r.vote_count || 0}</span>
+                                    </button>
                                 </div>
                             );
                         })}
