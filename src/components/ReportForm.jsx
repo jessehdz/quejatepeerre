@@ -327,6 +327,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                     <div className="nearby-list">
                         {nearbyReports.map(r => {
                             const catData = CATEGORIES.find(c => c.key === r.category) || CATEGORIES[0];
+                            const CatIcon = catData.icon;
                             const daysOpen = r.created_at ? Math.floor((Date.now() - new Date(r.created_at)) / 86400000) : 0;
                             const voted   = votedNearbyIds.has(r.id);
                             const voting  = votingNearbyIds.has(r.id);
@@ -334,8 +335,15 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                                 <div key={r.id} className="nearby-card">
                                     {r.image_url && <img src={r.image_url} alt="" className="nearby-card-photo" />}
                                     <div className="nearby-card-body">
-                                        <div className="nearby-card-cat" style={{ background: catData.color }}>
-                                            {catData.label.toUpperCase()} · {r.subcategory?.toUpperCase()}
+                                        {/* Same split pill as ReportCard's .rc-cat-pill — icon chip +
+                                            translucent subcategory chip, same corner radii. */}
+                                        <div className="nearby-cat-pill">
+                                            <span className="nearby-cat-left" style={{ background: catData.color }}>
+                                                {CatIcon && <CatIcon />}
+                                            </span>
+                                            {r.subcategory && (
+                                                <span className="nearby-cat-right">{r.subcategory.toUpperCase()}</span>
+                                            )}
                                         </div>
                                         <div className="nearby-card-title">{r.title}</div>
                                         <div className="nearby-card-footer">

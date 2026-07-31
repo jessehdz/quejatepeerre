@@ -840,15 +840,39 @@
     min-width: 0;
 }
 
-.nearby-card-cat {
-    display: inline-block;
-    font-family: var(--font_main);
-    font-size: 8px;
-    letter-spacing: .1em;
-    color: #fff;
-    padding: 2px 8px;
-    border-radius: var(--r-pill);
+/* Split pill — mirrors ReportCard's .rc-cat-pill/.rc-cat-left/.rc-cat-right
+   exactly, including their corner radii (9px 1px 1px 9px / 0 7px 7px 0). */
+.nearby-cat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
     width: fit-content;
+}
+
+.nearby-cat-left {
+    display: inline-flex;
+    align-items: center;
+    color: var(--cream);
+    padding: 4px 6px;
+    border-radius: 9px 1px 1px 9px;
+    line-height: 1;
+    font-size: 12px;
+}
+
+.nearby-cat-right {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(20, 14, 8, 0.3);
+    backdrop-filter: blur(8px);
+    color: var(--cream);
+    font-family: var(--font_nums);
+    font-size: 8px;
+    font-weight: 600;
+    padding: 4px 7px;
+    border-radius: 0 7px 7px 0;
+    line-height: 1;
+    letter-spacing: .06em;
+    border-left: 1px solid rgba(67, 67, 67, 0.679);
 }
 
 .nearby-card-title {
@@ -936,6 +960,10 @@
     letter-spacing: .06em;
     cursor: pointer;
     transition: all .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
 }
 .nearby-btn-new:hover {
     border-color: var(--muted);
