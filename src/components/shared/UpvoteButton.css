@@ -1,0 +1,63 @@
+/* Upvote button — translucent by default, solid red once voted.
+   .upvote-btn-pill: compact inline shape (ReportCard, ReportDetail).
+   .upvote-btn-block: bigger column tap-target (ReportForm's nearby list). */
+
+.upvote-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: var(--r-comp);
+    cursor: pointer;
+    font-family: var(--font_nums);
+    background: rgba(255,255,255,0.12);
+    border: 1.5px solid rgba(255,255,255,0.28);
+    color: var(--cream);
+    transition: background .15s, opacity .15s, color .15s, border-color .15s;
+}
+
+.upvote-btn.voted {
+    background: var(--red);
+    border-color: var(--red);
+    color: #FAF5E9;
+}
+
+.upvote-btn:disabled { cursor: not-allowed; }
+
+.upvote-btn-pill {
+    height: 30px;
+    padding: 0 12px;
+    font-size: 11.5px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.upvote-btn-pill .upvote-btn-text {
+    font-family: 'Spline Sans Mono', monospace;
+    font-weight: 600;
+    font-size: 12px;
+    min-width: 18px;
+    text-align: center;
+}
+
+.upvote-btn-block {
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    width: 64px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.22);
+}
+
+.upvote-btn-block:hover:not(:disabled) {
+    background: rgba(255,255,255,0.18);
+}
+
+.upvote-btn-block:disabled { opacity: .45; }
+
+.upvote-btn-block .upvote-btn-text {
+    font-family: 'Spline Sans Mono', monospace;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1;
+}

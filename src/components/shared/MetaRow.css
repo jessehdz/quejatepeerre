@@ -1,0 +1,40 @@
+/* Report metadata rows — shared by ReportDetail and ReportForm's success screen. */
+
+.meta-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font_main);
+    font-size: 11px;
+    color: var(--muted2);
+    letter-spacing: .04em;
+}
+
+.meta-label {
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    min-width: 110px;
+}
+
+.meta-val {
+    color: var(--cream);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.meta-link {
+    font-family: var(--font_main);
+    font-size: 11px;
+    color: var(--cel);
+    text-decoration: none;
+    letter-spacing: .04em;
+}
+.meta-link:hover { text-decoration: underline; }

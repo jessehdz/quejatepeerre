@@ -1,0 +1,44 @@
+/* Bottom-sheet overlay — fixed dark backdrop + slide-up rounded-top panel.
+   Shared by Onboarding, GpsPrimer, GpsBlocked, and ReportForm. */
+
+.sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.sheet-panel {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    background: var(--bg2);
+    border-radius: 28px 28px 0 0;
+    border-top: 2px solid var(--tile2);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    animation: sheetSlideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+.sheet-align-center {
+    align-items: center;
+    text-align: center;
+}
+
+.sheet-align-left {
+    text-align: left;
+}
+
+.sheet-scrollable {
+    height: 880px;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+@keyframes sheetSlideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+}

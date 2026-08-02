@@ -1,0 +1,31 @@
+/* Full-width solid-red CTA button — canonical shape shared by Onboarding,
+   GpsPrimer, GpsBlocked, and ReportForm's submit/success-close/nearby
+   buttons (normalized to one radius/padding/letter-spacing). */
+
+.cta-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 15px;
+    border-radius: 14px;
+    background: var(--red);
+    border: none;
+    color: #fff;
+    font-family: var(--font_main);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity .15s;
+}
+
+.cta-btn:active { opacity: .85; }
+
+.cta-btn.disabled {
+    background: var(--red-dk);
+    opacity: .25;
+    cursor: not-allowed;
+}

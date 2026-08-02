@@ -1,0 +1,44 @@
+/* Status badge — label on top, days row stacked underneath, same box.
+   Shared by ReportCard and ReportDetail. */
+
+.status-badge {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: var(--cream);
+    font-family: var(--font_nums);
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 6px 8px;
+    border-radius: 7px;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    flex: none;
+}
+
+.status-badge-label { line-height: 1; }
+
+.status-badge-days {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+    line-height: 1;
+}
+
+.status-badge-days-num {
+    font-family: var(--font_nums);
+    font-weight: 900;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.status-badge-days-word {
+    font-family: var(--font_nums);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(255,255,255,0.48);
+}

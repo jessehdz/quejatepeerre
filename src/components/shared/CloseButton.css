@@ -1,0 +1,23 @@
+/* Dismiss control base — size, position, and color are the caller's job
+   via the passed className (they vary per use site). */
+
+.close-btn-shared {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+}
+
+.close-btn-shared.filled {
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 50%;
+}
+
+.close-btn-glyph {
+    line-height: 1;
+}

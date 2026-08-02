@@ -1,0 +1,39 @@
+/* Bordered action button — transparent by default, .primary fills solid
+   translucent white. Shared by ReportCard's dropdown actions and
+   ReportDetail's status-picker/share buttons. Sizing within a row (flex:1,
+   wrapping, mobile icon-only collapse, etc.) is each consumer's own layout
+   concern, applied via a descendant selector in that component's CSS. */
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 9px;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    background: transparent;
+    color: var(--cream);
+    font-family: var(--font_content);
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.action-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.action-btn.primary {
+    border: none;
+    background: rgba(255,255,255,0.32);
+    color: var(--cream);
+}
+
+/* Status-picker only — tints the active option with its own status color */
+.action-btn.active {
+    border-color: var(--s-color, rgba(255,255,255,0.25));
+    background: color-mix(in srgb, var(--s-color, #fff) 18%, transparent);
+}
+
+.action-btn-icon { flex: none; }
