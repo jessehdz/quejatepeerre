@@ -6,6 +6,7 @@ export function buildMapsLink({ lat, lng, address } = {}) {
 }
 
 // Multi-line share message shared by ReportDetail and ReportForm's success screen.
+// Uppercased end-to-end to match the app's all-caps UI language.
 export function buildShareMessage({ title, description, location, municipality, dateStr, mapsLink, hashtags }) {
     return [
         `🚨 ${title}`,
@@ -18,7 +19,7 @@ export function buildShareMessage({ title, description, location, municipality, 
         ``,
         hashtags.join(' '),
         `quejatepeerre.com`,
-    ].filter(l => l !== null).join('\n');
+    ].filter(l => l !== null).join('\n').toUpperCase();
 }
 
 // Native share (with optional photo attachment) → clipboard fallback.
