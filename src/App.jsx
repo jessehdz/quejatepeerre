@@ -12,7 +12,7 @@ import Onboarding, { hasSeenOnboarding, markOnboardingSeen } from './components/
 import GpsPrimer from './components/GpsPrimer';
 import GpsBlocked from './components/GpsBlocked';
 import Faq from './components/Faq';
-import { IoCloseCircle } from "react-icons/io5";
+import CloseButton from './components/shared/CloseButton';
 import './App.css';
 
 function App() {
@@ -148,9 +148,7 @@ function App() {
           {loadingLocation ? 'Obteniendo ubicación...' : exactLocation}
         </span>
       </div>
-      <button className="remove-pin-btn" onClick={clearLocation} aria-label="Quitar pin">
-        <IoCloseCircle size={28} color="var(--cel)" />
-      </button>
+      <CloseButton className="remove-pin-btn" size={28} onClick={clearLocation} ariaLabel="Quitar pin" />
     </div>
   );
 

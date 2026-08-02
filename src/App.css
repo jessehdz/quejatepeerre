@@ -71,16 +71,10 @@
 }
 
 .remove-pin-btn {
-    background: transparent;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 12px;
-    padding: 0 0 0 8px;
+    color: var(--cel);
+    padding-left: 8px;
     min-width: 44px;
     min-height: 44px;
-    display: flex;
-    align-items: center;
 }
 
 /* ── TABLET ≥640px ──────────────────────────────────────────────────── */
