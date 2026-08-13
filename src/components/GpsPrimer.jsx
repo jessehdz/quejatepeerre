@@ -1,4 +1,6 @@
 import { IoLocationSharp } from 'react-icons/io5';
+import CtaButton from './shared/CtaButton';
+import BottomSheet from './shared/BottomSheet';
 import './GpsPrimer.css';
 
 /*
@@ -9,23 +11,19 @@ import './GpsPrimer.css';
 */
 function GpsPrimer({ onAllow, onSkip }) {
     return (
-        <div className="gps-primer-backdrop" onClick={onSkip}>
-            <div className="gps-primer-sheet" onClick={e => e.stopPropagation()}>
-                <div className="gps-primer-icon"><IoLocationSharp size={28} /></div>
-                <h3 className="gps-primer-title">Usamos tu ubicación para ubicar el reporte</h3>
-                <p className="gps-primer-body">
-                    Con tu GPS llenamos automáticamente el municipio y la dirección exacta del
-                    problema, para que no tengas que escribirla. Solo se usa para este reporte —
-                    tu reporte sigue siendo 100% anónimo.
-                </p>
-                <button className="gps-primer-allow" onClick={onAllow}>
-                    Activar GPS
-                </button>
-                <button className="gps-primer-skip" onClick={onSkip}>
-                    Escribir dirección manualmente
-                </button>
-            </div>
-        </div>
+        <BottomSheet onClose={onSkip} zIndex={1600} className="gps-primer-sheet">
+            <div className="gps-primer-icon"><IoLocationSharp size={28} /></div>
+            <h3 className="gps-primer-title">Usamos tu ubicación para ubicar el reporte</h3>
+            <p className="gps-primer-body">
+                Con tu GPS llenamos automáticamente el municipio y la dirección exacta del
+                problema, para que no tengas que escribirla. Solo se usa para este reporte —
+                tu reporte sigue siendo 100% anónimo.
+            </p>
+            <CtaButton className="gps-primer-allow" label="Activar GPS" onClick={onAllow} />
+            <button className="gps-primer-skip" onClick={onSkip}>
+                Escribir dirección manualmente
+            </button>
+        </BottomSheet>
     );
 }
 

@@ -1,47 +1,10 @@
 /* Onboarding — bottom sheet overlay, mobile-first */
 
-.ob-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.72);
-    z-index: 1500;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-}
-
-/* Last slide — drop below the bottom nav (z-index 1000) so the real
-   nav bar, with its red FAB, pops up above the dimmed sheet instead
-   of staying hidden behind it. */
-.ob-backdrop-final {
-    z-index: 900;
-}
-
-/* The sheet slides up from the bottom */
-.ob-sheet {
-    width: 100%;
-    max-width: 520px;
-    background: var(--bg2);
-    border-radius: 28px 28px 0 0;
-    border-top: 2px solid var(--tile2);
-    padding: 28px;  /* bottom nav stays hidden behind the backdrop on these slides, so no extra clearance needed */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    animation: obSlideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1) both;
-    position: relative;
-}
-
-/* Last slide only — the backdrop drops below the nav bar, so leave room
+/* Bottom sheet — see shared/BottomSheet.css. Last slide only: the backdrop
+   drops below the nav bar (zIndex prop, see Onboarding.jsx), so leave room
    for it (and the pointer arrow) below the sheet's content. */
-.ob-backdrop-final .ob-sheet {
+.ob-sheet-final {
     padding-bottom: 80px;
-}
-
-@keyframes obSlideUp {
-    from { transform: translateY(100%); }
-    to   { transform: translateY(0); }
 }
 
 /* Close — persistent exit, top-right of the sheet */
@@ -51,15 +14,7 @@
     right: 14px;
     width: 32px;
     height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
     color: var(--muted);
-    font-size: 22px;
-    line-height: 1;
-    cursor: pointer;
 }
 
 /* Progress dots */
@@ -104,26 +59,11 @@
     line-height: 1;
 }
 
-.ob-logo-cream { color: var(--cream); }
-.ob-logo-red  { color: var(--red); }
-.ob-logo-cel { color: var(--cel); }
-
 /* Emoji — large, punchy */
 .ob-emoji {
     font-size: 52px;
     line-height: 1;
     margin-bottom: 16px;
-}
-
-/* Title */
-.ob-title {
-    font-family: var(--font_main);
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--cream);
-    letter-spacing: -0.01em;
-    margin-bottom: 14px;
-    line-height: 1.2;
 }
 
 /* Body — max 2 short lines */
@@ -147,24 +87,8 @@
 }
 
 /* CTA button */
-.ob-cta {
-    width: 100%;
-    padding: 15px;
-    border-radius: 14px;
-    background: var(--red);
-    color: #fff;
-    font-family: var(--font_main);
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    border: none;
-    cursor: pointer;
-    transition: opacity 0.15s;
-    margin-bottom: 12px;
-}
-
-.ob-cta:active { opacity: 0.85; }
+/* CTA look — see shared/CtaButton.css */
+.ob-cta { margin-bottom: 12px; }
 
 /* "Start here" pointer to the real FAB, revealed below in the bottom nav */
 .ob-fab-pointer {
