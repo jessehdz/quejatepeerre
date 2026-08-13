@@ -84,6 +84,24 @@ export async function submitReport(reportData) {
     return data;
 }
 
+// upvoteReport - RPC-first, read-then-update-fallback vote increment.
+// Returns the new vote_count, or throws on hard failure. Callers own their
+// own local voted/voting UI state — that legitimately differs per component.
+export async function upvoteReport(reportId, fallbackCount = 0) {
+    const { data, error } = await supabase.rpc('increment_vote', { report_id: reportId });
+    if (!error) {
+        return typeof data === 'number' ? data : fallbackCount + 1;
+    }
+    // RPC not available — fallback: read fresh count then update
+    const { data: fresh } = await supabase
+        .from('reports').select('vote_count').eq('id', reportId).single();
+    const current = fresh?.vote_count ?? fallbackCount;
+    const { error: ue } = await supabase
+        .from('reports').update({ vote_count: current + 1 }).eq('id', reportId);
+    if (ue) throw ue;
+    return current + 1;
+}
+
 // getReports - returns all open reports, newest first (to implement later: filter by municipality and status)
 export async function getReports() {
     const { data, error } = await supabase
