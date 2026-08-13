@@ -14,9 +14,10 @@
     position: relative;
     width: 100%;
     max-width: 520px;
-    background: var(--bg2);
+    background: #fff;
+    /* background: var(--bg2); */
     border-radius: 28px 28px 0 0;
-    border-top: 2px solid var(--tile2);
+    border-top: 2px solid var(--r-comp);
     padding: 28px;
     display: flex;
     flex-direction: column;

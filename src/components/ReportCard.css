@@ -62,86 +62,9 @@
   gap: 8px;
 }
 
-/* Split category + subcategory pill */
-.rc-cat-pill {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  flex: none;
-}
+/* Category + subcategory pill — see shared/CategoryPill.css */
 
-.rc-cat-left {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--cream);
-  padding: 5px 8px;
-  border-radius: 9px 1px 1px 9px;
-  line-height: 1;
-}
-
-.rc-cat-icon { font-size: 15px; line-height: 0; }
-
-.rc-cat-right {
-  display: inline-flex;
-  align-items: center;
-  background: rgba(20, 14, 8,0.3);
-  backdrop-filter: blur(8px);
-  color: var(--cream);
-  font-family: var(--font_nums);
-  font-size: 10.5px;
-  font-weight: 600;
-  padding: 6px 10px;
-  border-radius: 0 7px 7px 0;
-  line-height: 1;
-  letter-spacing: 0.06em;
-  border-left: 1px solid rgba(67, 67, 67, 0.679);
-}
-
-/* Status badge — label on top, days row stacked underneath, same box */
-.rc-status {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  color: var(--cream);
-  font-family: var(--font_nums);
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 6px 8px;
-  border-radius: 7px;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  flex: none;
-}
-
-.rc-status-label {
-  line-height: 1;
-}
-
-.rc-days-row {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 2px;
-  line-height: 1;
-}
-
-.rc-days-num {
-  font-family: var(--font_nums);
-  font-weight: 900;
-  font-size: 12px;
-  line-height: 1;
-}
-
-.rc-days-word {
-  font-family: var(--font_nums);
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: rgba(255,255,255,0.48);
-}
+/* Status badge — see shared/StatusBadge.css */
 
 /* ── BOTTOM CONTENT ── */
 .rc-bottom {
@@ -168,36 +91,11 @@
   letter-spacing: 0.08em;
 }
 
-/* Not clickable yet — voting will require a GPS radius check first.
-   cursor stays default so it reads as a stat, not a control. */
-.rc-upvote {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 30px;
-  padding: 0 11px;
-  border-radius: 999px;
-  cursor: default;
-  font-family: var(--font_nums);
-  background: rgba(255,255,255,0.12);
-  border: 1.5px solid rgba(255,255,255,0.28);
-  color: var(--cream);
-  backdrop-filter: blur(10px);
-}
-
-.rc-upvote.voted {
-  background: var(--red);
-  border-color: var(--red);
-  color: #FAF5E9;
-}
-
-.rc-vote-count {
-  font-family: 'Spline Sans Mono', monospace;
-  font-weight: 600;
-  font-size: 12px;
-  min-width: 18px;
-  text-align: center;
-}
+/* Upvote button look — see shared/UpvoteButton.css. Not clickable yet —
+   voting will require a GPS radius check first. cursor stays default (not
+   the shared component's not-allowed) so it reads as a stat, not a
+   blocked control. */
+.rc-upvote-stat:disabled { cursor: default; }
 
 /* Full-width label + chevron bar — the only clickable spot on the photo,
    so it carries a "Ver más/menos" label rather than relying on the icon alone. */
@@ -320,44 +218,22 @@
   font-family: var(--font_nums);
   text-transform: uppercase;
 }
+/* Row layout only — button look itself is shared/ActionButton.css */
 .rc-dropdown-actions { display: flex; gap: 8px; }
-.rc-action-btn {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 10px;
-  border-radius: 9px;
-  border: 1.5px solid rgba(255,255,255,0.25);
-  background: transparent;
-  color: var(--cream);
-  font-family: var(--font_content);
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.rc-action-btn.primary { 
-  border: none; 
-  background: rgba(255,255,255,0.32);
-  color: var(--cream);
-}
-.rc-action-icon { flex: none; }
+.rc-dropdown-actions .action-btn { flex: 1; }
 
 /* Mobile: Compartir / Actualizar estado shrink to icon-only so all three
    buttons fit on one row — Más detalles keeps its full label. */
 @media (max-width: 480px) {
-  .rc-action-btn:not(.primary) {
+  .rc-dropdown-actions .action-btn:not(.primary) {
     flex: none;
     width: 36px;
     padding: 0;
   }
-  .rc-action-btn:not(.primary) .rc-action-label {
+  .rc-dropdown-actions .action-btn:not(.primary) .action-btn-label {
     display: none;
   }
-  .rc-action-btn.primary {
+  .rc-dropdown-actions .action-btn.primary {
     flex: 1;
   }
 }

@@ -1,10 +1,18 @@
 import { useState, useMemo } from 'react';
 import { CATEGORIES, CONTEXT_CHIPS, generateTitle, generateHashtags } from '../lib/constants';
-import { submitReport, uploadImage, validatePhoto } from '../lib/api';
+import { getCategoryData } from '../lib/categories';
+import { calcDaysOpen, formatDate } from '../lib/dates';
+import { buildMapsLink, buildShareMessage, shareReport } from '../lib/share';
+import { submitReport, uploadImage, validatePhoto, upvoteReport } from '../lib/api';
 import { forwardGeocode } from '../lib/geocode';
-import { supabase } from '../lib/supabase';
+import CategoryPill from './shared/CategoryPill';
+import CloseButton from './shared/CloseButton';
+import CtaButton from './shared/CtaButton';
+import UpvoteButton from './shared/UpvoteButton';
+import BottomSheet from './shared/BottomSheet';
+import { MetaRow, MetaItem } from './shared/MetaRow';
 import './ReportForm.css';
-import { IoCloseCircle, IoCamera, IoImagesOutline, IoLocationSharp } from 'react-icons/io5';
+import { IoCamera, IoImagesOutline, IoLocationSharp, IoCalendarOutline } from 'react-icons/io5';
 import { Megaphone } from 'lucide-react';
 
 function distanceMetres(lat1, lng1, lat2, lng2) {
@@ -97,23 +105,10 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
         if (!gpsVerified || votedNearbyIds.has(report.id) || votingNearbyIds.has(report.id)) return;
         setVotingNearbyIds(prev => new Set(prev).add(report.id));
         try {
-            const { data, error } = await supabase.rpc('increment_vote', { report_id: report.id });
-            if (error) {
-                // RPC not available — fallback: read fresh count then update
-                const { data: fresh } = await supabase
-                    .from('reports').select('vote_count').eq('id', report.id).single();
-                const current = fresh?.vote_count ?? report.vote_count ?? 0;
-                const { error: ue } = await supabase
-                    .from('reports').update({ vote_count: current + 1 }).eq('id', report.id);
-                if (!ue) {
-                    setVotedNearbyIds(prev => new Set(prev).add(report.id));
-                    onVote?.({ ...report, vote_count: current + 1 });
-                } else console.error('Vote error:', ue);
-            } else {
-                setVotedNearbyIds(prev => new Set(prev).add(report.id));
-                onVote?.({ ...report, vote_count: typeof data === 'number' ? data : (report.vote_count || 0) + 1 });
-            }
-        } catch (e) { console.error(e); }
+            const newCount = await upvoteReport(report.id, report.vote_count || 0);
+            setVotedNearbyIds(prev => new Set(prev).add(report.id));
+            onVote?.({ ...report, vote_count: newCount });
+        } catch (e) { console.error('Vote error:', e); }
         finally {
             setVotingNearbyIds(prev => { const next = new Set(prev); next.delete(report.id); return next; });
         }
@@ -212,54 +207,25 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
     // ── SUCCESS SCREEN ─────────────────────────────────────────────
     if (success) {
         const hashtags   = generateHashtags(category, subcategory, resolvedMuni);
-        const hashStr    = hashtags.join(' ');
-        const dateStr    = new Date().toLocaleDateString('es-PR', { day: 'numeric', month: 'long', year: 'numeric' });
-        const mapsLink   = (resolvedLat && resolvedLng)
-            ? `https://maps.google.com/?q=${resolvedLat},${resolvedLng}`
-            : `https://maps.google.com/?q=${encodeURIComponent(resolvedExact || resolvedMuni || 'Puerto Rico')}`;
+        const dateStr    = formatDate(new Date().toISOString());
+        const mapsLink   = buildMapsLink({ lat: resolvedLat, lng: resolvedLng, address: resolvedExact || resolvedMuni });
 
-        const shareMessage = [
-            `🚨 ${autoTitle}`,
-            autoDescription || null,
-            ``,
-            `📍 ${resolvedExact || resolvedMuni || 'Puerto Rico'}`,
-            `🏛 Municipio: ${resolvedMuni || 'Puerto Rico'}`,
-            `📅 Reportado: ${dateStr}`,
-            `🗺 Ver en el mapa: ${mapsLink}`,
-            ``,
-            hashStr,
-            `quejatepeerre.com`,
-        ].filter(l => l !== null).join('\n');
+        const shareMessage = buildShareMessage({
+            title: autoTitle, description: autoDescription,
+            location: resolvedExact, municipality: resolvedMuni, dateStr, mapsLink, hashtags,
+        });
 
         function handleClose() { onSubmit(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
         async function handleShare() {
-            if (navigator.share) {
-                try {
-                    if (savedImageURL && navigator.canShare) {
-                        try {
-                            const res  = await fetch(savedImageURL);
-                            const blob = await res.blob();
-                            const file = new File([blob], 'reporte-qpr.jpg', { type: blob.type });
-                            if (navigator.canShare({ files: [file] })) {
-                                await navigator.share({ files: [file], text: shareMessage });
-                                return;
-                            }
-                        } catch (_) { /* photo fetch failed — fall through */ }
-                    }
-                    await navigator.share({ title: autoTitle, text: shareMessage });
-                } catch (_) { /* user cancelled */ }
-            } else {
-                navigator.clipboard.writeText(shareMessage).catch(() => {});
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2500);
-            }
+            await shareReport({
+                title: autoTitle, message: shareMessage, imageUrl: savedImageURL,
+                onCopied: () => { setCopied(true); setTimeout(() => setCopied(false), 2500); },
+            });
         }
 
         return (
-            <>
-                <div className="form-backdrop" onClick={handleClose} />
-                <div className="form-panel success-panel">
+            <BottomSheet onClose={handleClose} zIndex={1200} scrollable className="form-panel success-panel" backdropClassName="form-backdrop">
                     <div className="form-handle" />
 
                     <div className="success-logo">
@@ -269,7 +235,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                     </div>
 
                     <div className="success-check"></div>
-                    <h3 className="success-title">Tu reporte fue enviado</h3>
+                    <h3 className="success-title">Tu reporte fue enviado!</h3>
                     <p className="success-sub">Anónimo · Visible para todos</p>
 
                     {savedImageURL && <img src={savedImageURL} alt="Evidencia" className="success-photo" />}
@@ -277,14 +243,24 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                     <div className="success-summary">
                         <div className="success-summary-title">{autoTitle}</div>
                         {autoDescription && <div className="success-summary-desc">{autoDescription}</div>}
-                        <div className="success-summary-meta">
-                            {resolvedExact && <span>📍 {resolvedExact}</span>}
-                            <span>🏛 {resolvedMuni || 'Puerto Rico'}</span>
-                            <span>📅 {dateStr}</span>
-                            <a className="success-maps-link" href={mapsLink} target="_blank" rel="noreferrer">
-                                🗺 Abrir en Google Maps ↗
-                            </a>
-                        </div>
+                        <MetaRow>
+                            {resolvedExact && (
+                                <MetaItem icon={IoLocationSharp} iconColor="var(--cel)">
+                                    <span>{resolvedExact}</span>
+                                </MetaItem>
+                            )}
+                            <MetaItem icon={IoCalendarOutline} iconColor="var(--muted)">
+                                <span>Reportado el {dateStr}</span>
+                            </MetaItem>
+                            <MetaItem label="Municipio">
+                                <span className="meta-val">{(resolvedMuni || 'Puerto Rico').toUpperCase()}</span>
+                            </MetaItem>
+                            <MetaItem label="Ver ubicación">
+                                <a className="meta-link" href={mapsLink} target="_blank" rel="noreferrer">
+                                    Abrir en Google Maps ↗
+                                </a>
+                            </MetaItem>
+                        </MetaRow>
                     </div>
 
                     <div className="success-hashtags">
@@ -300,29 +276,22 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                         <p className="success-share-hint">En tu celular este botón abre el menú de mensajes directo.</p>
                     )}
 
-                    <button className="success-close-btn" onClick={handleClose}>
-                        Ver mi reporte en el feed →
-                    </button>
-                </div>
-            </>
+                    <CtaButton className="success-close-btn" label="Ver mi reporte en el feed →" onClick={handleClose} />
+            </BottomSheet>
         );
     }
 
     // ── NEARBY SCREEN ──────────────────────────────────────────────
     if (showNearby) {
-        const previewCatData = previewReport
-            ? (CATEGORIES.find(c => c.key === previewReport.category) || CATEGORIES[0])
-            : null;
-        const PreviewCatIcon = previewCatData?.icon;
+        const previewCatData = previewReport ? getCategoryData(previewReport.category) : null;
 
         return (
             <>
-                <div className="form-backdrop" onClick={onClose} />
-                <div className="form-panel">
+                <BottomSheet onClose={onClose} zIndex={1200} scrollable align="left" className="form-panel" backdropClassName="form-backdrop">
                     <div className="form-handle" />
                     <div className="form-header">
                         <h2 className="form-title">Ya hay reportes cercanos</h2>
-                        <button className="close-btn" onClick={onClose}><IoCloseCircle size={28} /></button>
+                        <CloseButton className="close-btn" onClick={onClose} ariaLabel="Cerrar" />
                     </div>
                     <p className="nearby-intro">
                         Encontramos {nearbyReports.length} reporte{nearbyReports.length !== 1 ? 's' : ''} a menos de 100 pies de tu ubicación.
@@ -335,9 +304,8 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                     )}
                     <div className="nearby-list">
                         {nearbyReports.map(r => {
-                            const catData = CATEGORIES.find(c => c.key === r.category) || CATEGORIES[0];
-                            const CatIcon = catData.icon;
-                            const daysOpen = r.created_at ? Math.floor((Date.now() - new Date(r.created_at)) / 86400000) : 0;
+                            const catData = getCategoryData(r.category);
+                            const daysOpen = calcDaysOpen(r.created_at);
                             const voted   = votedNearbyIds.has(r.id);
                             const voting  = votingNearbyIds.has(r.id);
                             return (
@@ -348,17 +316,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                                 >
                                     {r.image_url && <img src={r.image_url} alt="" className="nearby-card-photo" />}
                                     <div className="nearby-card-body">
-                                        {/* Same split pill as ReportCard's .rc-cat-pill — icon chip +
-                                            translucent subcategory chip, same corner radii. */}
-                                        <div className="nearby-cat-pill">
-                                            <span className="nearby-cat-left" style={{ background: catData.color }}>
-                                                {CatIcon && <CatIcon />}
-                                                <span className="nearby-cat-label">{catData.label.toUpperCase()}</span>
-                                            </span>
-                                            {r.subcategory && (
-                                                <span className="nearby-cat-right">{r.subcategory.toUpperCase()}</span>
-                                            )}
-                                        </div>
+                                        <CategoryPill catData={catData} subcategory={r.subcategory} showLabel />
                                         <div className="nearby-card-title">{r.title}</div>
                                         <div className="nearby-card-footer">
                                             <span className="nearby-card-meta">
@@ -369,57 +327,44 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                                     {/* Separate block to the right of the whole card — bigger tap
                                         target than an inline pill. vote_count comes straight from the
                                         same reports array/field ReportCard and ReportDetail render. */}
-                                    <button
-                                        className={`nearby-vote-block${voted ? ' voted' : ''}`}
+                                    <UpvoteButton
+                                        variant="block"
+                                        className="nearby-vote-block"
+                                        count={r.vote_count || 0}
+                                        voted={voted}
                                         onClick={e => { e.stopPropagation(); handleNearbyVote(r); }}
                                         disabled={!gpsVerified || voted || voting}
                                         title={!gpsVerified ? 'Confirma tu ubicación con GPS para votar' : voted ? '¡Ya votaste!' : 'Yo también'}
-                                        aria-label="Yo también"
-                                    >
-                                        <Megaphone size={20} />
-                                        <span className="nearby-vote-count">{r.vote_count || 0}</span>
-                                    </button>
+                                    />
                                 </div>
                             );
                         })}
                     </div>
                     <div className="nearby-actions">
-                        <button className="nearby-btn-new" onClick={() => setNearbyDismissed(true)}>
-                            <Megaphone size={16} /> No es el mismo — crear nuevo reporte
-                        </button>
+                        <CtaButton className="nearby-btn-new" icon={Megaphone} label="No es el mismo — crear nuevo reporte" onClick={() => setNearbyDismissed(true)} />
                     </div>
-                </div>
+                </BottomSheet>
 
                 {/* Photo pop-out — bigger view of the report so people can actually
                     see what they'd be upvoting before tapping "Yo también". */}
                 {previewReport && (
                     <div className="nearby-preview-backdrop" onClick={() => setPreviewReport(null)}>
                         <div className="nearby-preview-sheet" onClick={e => e.stopPropagation()}>
-                            <button className="nearby-preview-close" onClick={() => setPreviewReport(null)}>
-                                <IoCloseCircle size={28} />
-                            </button>
+                            <CloseButton filled className="nearby-preview-close" onClick={() => setPreviewReport(null)} ariaLabel="Cerrar" />
                             <img src={previewReport.image_url} alt="" className="nearby-preview-photo" />
                             <div className="nearby-preview-info">
-                                <div className="nearby-cat-pill">
-                                    <span className="nearby-cat-left" style={{ background: previewCatData.color }}>
-                                        {PreviewCatIcon && <PreviewCatIcon />}
-                                        <span className="nearby-cat-label">{previewCatData.label.toUpperCase()}</span>
-                                    </span>
-                                    {previewReport.subcategory && (
-                                        <span className="nearby-cat-right">{previewReport.subcategory.toUpperCase()}</span>
-                                    )}
-                                </div>
+                                <CategoryPill catData={previewCatData} subcategory={previewReport.subcategory} showLabel />
                                 <div className="nearby-preview-title">{previewReport.title}</div>
-                                <button
-                                    className={`nearby-vote-block nearby-preview-vote${votedNearbyIds.has(previewReport.id) ? ' voted' : ''}`}
+                                <UpvoteButton
+                                    variant="block"
+                                    className="nearby-vote-block nearby-preview-vote"
+                                    label="Si es el mismo problema, ¡Yo también!"
+                                    count={previewReport.vote_count || 0}
+                                    voted={votedNearbyIds.has(previewReport.id)}
                                     onClick={() => handleNearbyVote(previewReport)}
                                     disabled={!gpsVerified || votedNearbyIds.has(previewReport.id) || votingNearbyIds.has(previewReport.id)}
                                     title={!gpsVerified ? 'Confirma tu ubicación con GPS para votar' : votedNearbyIds.has(previewReport.id) ? '¡Ya votaste!' : 'Yo también'}
-                                    aria-label="Yo también"
-                                >
-                                    <Megaphone size={20} />Si es el mismo problema, ¡Yo también! 
-                                    <span className="nearby-vote-count">{previewReport.vote_count || 0}</span>
-                                </button>
+                                />
                             </div>
                         </div>
                     </div>
@@ -430,13 +375,11 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
 
     // ── MAIN FORM ──────────────────────────────────────────────────
     return (
-        <>
-            <div className="form-backdrop" onClick={onClose} />
-            <div className="form-panel">
+        <BottomSheet onClose={onClose} zIndex={1200} scrollable align="left" className="form-panel" backdropClassName="form-backdrop">
                 <div className="form-handle" />
                 <div className="form-header">
                     <h2 className="form-title">Nuevo Reporte</h2>
-                    <button className="close-btn" onClick={onClose}><IoCloseCircle size={28} /></button>
+                    <CloseButton className="close-btn" onClick={onClose} ariaLabel="Cerrar" />
                 </div>
 
                 {/* LOCATION */}
@@ -543,7 +486,7 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                         <>
                             <div className="photo-preview-wrap">
                                 <img src={photoPreview} alt="Evidencia" className="photo-preview" />
-                                <button className="remove-photo-btn" onClick={handleRemovePhoto}><IoCloseCircle size={28} /></button>
+                                <CloseButton className="remove-photo-btn" onClick={handleRemovePhoto} ariaLabel="Quitar foto" />
                             </div>
                             <label className="photo-consent-check">
                                 <input type="checkbox" checked={photoConsent}
@@ -581,12 +524,13 @@ function ReportForm({ isOpen, onClose, lng, lat, municipality, exactLocation, on
                     </div>
                 )}
 
-                <button className={`submit-btn${!isValid || submitting ? ' disabled' : ''}`}
-                    onClick={handleSubmit} disabled={!isValid || submitting}>
-                    {uploadingPhoto ? 'Subiendo foto...' : submitting ? 'Enviando...' : 'Enviar reporte'}
-                </button>
-            </div>
-        </>
+                <CtaButton
+                    className="submit-btn"
+                    label={uploadingPhoto ? 'Subiendo foto...' : submitting ? 'Enviando...' : 'Enviar reporte'}
+                    onClick={handleSubmit}
+                    disabled={!isValid || submitting}
+                />
+        </BottomSheet>
     );
 }
 
