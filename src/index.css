@@ -4,63 +4,90 @@
   padding: 0; 
 }
 
+:root, [data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0E2B2A;  
+  --bg2: #153836;  
+  --surface: #153836;
+  --tile: #153836;  
+  --tile2: #1D4B47;
+  --fg: #EFEDE3;  
+  --muted: #9CC3B6;  
+  --muted2: #D2D1C7;
+  --border: rgba(239,237,227,.12);  
+  --border2: rgba(239,237,227,.24);
+  --btn2-bg: #D2D1C7;  
+  --btn2-fg: #05110F;
+  --accent-text: #FF3D00;
+}
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #E8E5D2;  
+  --bg2: #F6F4EA;  
+  --surface: #F6F4EA;
+  --tile: #F6F4EA;  
+  --tile2: #ECE9D8;
+  --fg: #0E2B2A;  
+  --muted: #4F6762;  
+  --muted2: #3E5752;
+  --border: rgba(14,43,42,.14);  
+  --border2: rgba(14,43,42,.28);
+  --btn2-bg: #0E2B2A;  
+  --btn2-fg: #EFEDE3;
+  --accent-text: #FF3D00;
+}
+
 :root {
-  /* backgrounds - dark, not black */
-  --bg: #1E2A2C; /* main page background */
-  --bg2: #243234; /* header and feed panel */
-  --tile: #2E3E40; /* cards and content tiles */
-  --tile2: #3A5054; /* hover state for tiles */
+  --accent: #FF3D00;  
+  --on-accent: #05110F;
+  --orange: #FF7A00;  
+  --teal: #00867D;  
+  --stone: #D2D1C7;
+  --navy: #04233A;  
+  --ink-black: #05110F;  
+  --on-photo: #EFEDE3;
+  --cream: var(--fg);                 
+  --red: var(--accent);  
+  --red-dk: #C22C00;  
+  --cel: #7BAFD4;
 
-  /* Puerto Rico colors */
-  --cel: #7BAFD4; /* celestial blue - accents */
-  --red: #CE1126; /* CTAs only (report button, FAB) */
-  --red-dk: #A00D1E; /* hover state for red buttons */
-
-  /* text */
-  --cream: #F0ECE4; /* primary text */
-  --muted: #6A8A8E; /* muted text - labels, secondary info */
-  --muted2: #8AACB0; /* slightly brighter muted text */
-
-  /* borders */
-  --border: rgba(255, 255, 255, .06); /* subtle border - barely visible */
-  --border2: rgba(255, 255, 255, .1); /* slightly more visible */
-
-  /* border radius */
-  --r: 8px; /* standard - cards, buttons */
-  --r-pill: 100px; /* fully rounded - badges, chips */
-  --r-pill-rec: 7px; /* slightly rounded - status badge, days open badge */
-
-  /* category colors */
-  --pothole: #EF4444;
-  --power: #FF6B35;
-  --water: #7bafd4;
-  --road: #9B5CF6;
-  --light: #00d4a8;
-
-  /* severity colors */
+ /* severity colors */
   --crisis: #C8402A;
   --verg: #C07818;
   --ignor: #7A6A28;
   --nuevo: #2A8A8A;
 
-  /* fonts */
-  --font_main: 'Electrolize', monospace;
-  --font_nums: 'Electrolize', monospace;
-  /* --font_main: 'Space Grotesk', sans-serif; */
-  /* --font_main: 'Saira', sans-serif; */
-  /* --font_main: 'Sarpanch', sans-serif; */
-  --font_content: 'Noto Sans HK', sans-serif;
+  /* labels, nav, buttons */
+  --font_main: 'JetBrains Mono', monospace;
 
-  /* component radius */
-  --r-comp: 8px;
+  /* big numbers, titles */
+  --font_nums: 'Rajdhani', sans-serif;
+  --font_display: 'Rajdhani', sans-serif;
+
+  /* reading text */
+  --font_content: 'IBM Plex Sans', sans-serif;    
+
+  /* border radius */
+  --r: 6px;  
+  --r-pill: 6px;  
+  --r-pill-rec: 4px;
+  --r-comp: 8px; /* component radius */
+  --r-card: 10px; /* card radius */
+
+  /* category colors */
+  /* --pothole: #EF4444;
+  --power: #FF6B35;
+  --water: #7BAFD4;
+  --road: #9B5CF6;
+  --light: #00D4A8; */
 
 }
 
 /* Base body styles */
 body {
-  font-family: var(--font_main);
-  background: var(--bg);
-  color: var(--cream);
+  font-family: var(--font_content); 
+  background: var(--bg); 
+  color: var(--fg); 
   min-height: 100vh;
 }
 
@@ -90,7 +117,6 @@ body {
   border-color: rgba(255,255,255,0.32);
   color: var(--cream);
 }
-
 
 /* scrollbar */
 ::-webkit-scrollbar { width: 3px; height: 3px; }
