@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { IoChevronDown } from 'react-icons/io5';
+import ThemeToggle from './ThemeToggle';
 import './Faq.css';
 
 /*
@@ -38,6 +39,7 @@ function Faq() {
 
     return (
         <div className="faq">
+            <ThemeToggle />
             <h2 className="faq-title">Preguntas frecuentes</h2>
             <div className="faq-list">
                 {FAQ_ITEMS.map((item, i) => {
