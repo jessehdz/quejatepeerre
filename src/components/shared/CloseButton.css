@@ -15,7 +15,7 @@
 
 .close-btn-shared.filled {
     background: rgba(0, 0, 0, 0.45);
-    border-radius: 50%;
+    border-radius: var(--r);
 }
 
 .close-btn-glyph {

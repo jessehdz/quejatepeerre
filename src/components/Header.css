@@ -34,10 +34,27 @@
 }
 
 .logo {
-    font-size: 24px;
-    font-weight: 800;
-    letter-spacing: -0.03em;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font_display);
+}
+
+.logo-mark {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--r);
+    flex: none;
+    background: radial-gradient(circle, var(--accent) 0 36%, transparent 38%), var(--ink-black);
+    border: 1px solid var(--border2);
+}
+
+.logo-accent {
+    color: var(--accent-text);
 }
 
 /* dual colored logo */
@@ -50,17 +67,19 @@
 }
 
 .logo-sub {
-    font-size: 10px;
+    font-size: 10.5px;
+    font-family: var(--font_main);
     color: var(--muted);
-    letter-spacing: .16em; 
+    letter-spacing: .1em; 
 }
 
 .beta-badge {
-    font-size: 8px;
-    letter-spacing: .1em;
-    color: var(--cel);
-    background-color: rgba(123, 175, 212, .15);
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-left: 4px;
+    font-size: 11px;
+    font-family: var(--font_main);
+    letter-spacing: .08em;
+    color: var(--muted);
+    border: 1px solid var(--border2);
+    background: none;
+    padding: 4px 8px;
+    border-radius: 3px;
 }
