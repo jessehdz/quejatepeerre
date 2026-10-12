@@ -98,7 +98,7 @@ function MapView({ onPinDrop, pinnedLocation, reports = [], flyToLocation }) {
                 ref={mapRef}
                 initialViewState={PR_CENTER}
                 style={{ width: '100%', height: '100%' }}
-                mapStyle={MAP_STYLES[theme] || MAP_STYLES.light}
+                mapStyle={MAP_STYLES[theme]}
                 onClick={handleMapClick}
             >
                 {/* Report markers */}
