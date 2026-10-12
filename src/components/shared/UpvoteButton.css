@@ -6,7 +6,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    border-radius: var(--r-comp);
+    border-radius: var(--r);
     cursor: pointer;
     font-family: var(--font_nums);
     background: rgba(255,255,255,0.12);
@@ -16,8 +16,8 @@
 }
 
 .upvote-btn.voted {
-    background: var(--red);
-    border-color: var(--red);
+    background: var(--accent);
+    border-color: var(--on-accent);
     color: #FAF5E9;
 }
 

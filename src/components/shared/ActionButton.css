@@ -11,10 +11,10 @@
     gap: 6px;
     height: 34px;
     padding: 0 12px;
-    border-radius: 9px;
-    border: 1.5px solid rgba(255,255,255,0.25);
+    border-radius: var(--r);
+    border: 1px solid var(--border2);
     background: transparent;
-    color: var(--cream);
+    color: var(--fg);
     font-family: var(--font_content);
     font-size: 11px;
     font-weight: 700;
@@ -26,8 +26,8 @@
 
 .action-btn.primary {
     border: none;
-    background: rgba(255,255,255,0.32);
-    color: var(--cream);
+    background: var(--accent);
+    color: var(--on-accent);
 }
 
 /* Status-picker only — tints the active option with its own status color */

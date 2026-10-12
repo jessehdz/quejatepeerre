@@ -9,6 +9,8 @@
 .meta-item {
     display: flex;
     align-items: center;
+    border-radius: var(--r);
+    border: 1px solid var(--border2);
     gap: 7px;
     font-family: var(--font_main);
     font-size: 11px;

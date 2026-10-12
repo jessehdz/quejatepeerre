@@ -98,8 +98,8 @@ body {
   gap: 5px;
   height: 30px;
   padding: 0 12px;
-  border-radius: 7px;
-  border: 1.5px solid rgba(255,255,255,0.32);
+  border-radius: var(--r);
+  border: 1px solid var(--border2);
   background: rgba(255,255,255,0.1);
   backdrop-filter: blur(10px);
   color: #fff;
