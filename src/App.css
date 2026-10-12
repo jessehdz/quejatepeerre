@@ -26,7 +26,7 @@
 .content {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: 86px;
+    padding-bottom: 110px;
 }
 
 /* ── PLACEHOLDER PANELS (datos / más tabs — not yet implemented) ───── */

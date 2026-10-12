@@ -1,5 +1,5 @@
 import './BottomNav.css';
-import { Map, Newspaper, Info, Ellipsis, Megaphone } from 'lucide-react';
+import { Map, Newspaper, Megaphone, Building2, CircleHelp } from 'lucide-react';
 
 
 function BottomNav({ activeTab, onTabChange }) {
@@ -23,21 +23,25 @@ function BottomNav({ activeTab, onTabChange }) {
                     <span className="nav-label">FEED</span>
                 </button>
 
-                <button className="nav-fab" onClick={() => onTabChange('report')}>
+                <div>
+                    <button className="nav-fab" onClick={() => onTabChange('report')}>
                     <span className="nav-icon"><Megaphone /></span>
-                </button>
+                    </button>
+                    <span className="nav-label nav-fab-label">REPORTAR</span>
 
+                </div>
+                
                 <button
                     className={`nav-item ${activeTab === 'datos' ? 'active' : ''}`}
                     onClick={() => onTabChange('datos')}>
-                    <span className="nav-icon"><Info /></span>
+                    <span className="nav-icon"><Building2 /></span>
                     <span className="nav-label">DATOS</span>
                 </button>
 
                 <button
                     className={`nav-item ${activeTab === 'más' ? 'active' : ''}`}
                     onClick={() => onTabChange('más')}>
-                    <span className="nav-icon"><Ellipsis /></span>
+                    <span className="nav-icon"><CircleHelp /></span>
                     <span className="nav-label">MÁS</span>
                 </button>
 
