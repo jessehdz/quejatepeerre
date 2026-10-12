@@ -18,6 +18,7 @@
     align-items: center;
     width: 100%;
     max-width: 480px;           /* same comfortable width on mobile + desktop */
+    margin: 0 auto;             /* center the group inside the full-width bar */
     padding: 0 10px;
 }
 
