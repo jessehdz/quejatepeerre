@@ -38,7 +38,7 @@
 .gps-blocked-settings-btn {
     width: 100%;
     padding: 13px;
-    border-radius: 14px;
+    border-radius: var(--r);
     background: var(--tile);
     border: 1px solid var(--border2);
     color: var(--cel);
