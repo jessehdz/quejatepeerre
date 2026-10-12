@@ -1,12 +1,17 @@
 import { useState, useCallback, useRef } from "react";
 import Map, { Marker, Popup } from "react-map-gl/maplibre";
+import { useTheme } from "../hooks/useTheme";
 import { FaExclamation } from "react-icons/fa";
 import { MdLocationOn } from "react-icons/md";
 import { CATEGORIES } from "../lib/constants";
 import './MapView.css';
 
+
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY;
-const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${MAPTILER_KEY}`;
+const MAP_STYLES = {
+    light: `https://api.maptiler.com/maps/streets-v2-light/style.json?key=${MAPTILER_KEY}`,
+    dark:  `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${MAPTILER_KEY}`,
+};
 
 // Island-wide view — shown on first load
 const PR_CENTER = {
@@ -33,6 +38,7 @@ const CATEGORY_COLORS = Object.fromEntries(CATEGORIES.map(c => [c.key, c.color])
 function MapView({ onPinDrop, pinnedLocation, reports = [], flyToLocation }) {
     const [selectedReport, setSelectedReport] = useState(null);
     const mapRef = useRef(null);
+    const theme = useTheme();
 
     // Fly to GPS/pin location at street zoom when flyToLocation changes
     const prevFlyTo = useRef(null);
@@ -92,7 +98,7 @@ function MapView({ onPinDrop, pinnedLocation, reports = [], flyToLocation }) {
                 ref={mapRef}
                 initialViewState={PR_CENTER}
                 style={{ width: '100%', height: '100%' }}
-                mapStyle={MAP_STYLE}
+                mapStyle={MAP_STYLES[theme] || MAP_STYLES.light}
                 onClick={handleMapClick}
             >
                 {/* Report markers */}
