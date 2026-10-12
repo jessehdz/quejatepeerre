@@ -12,16 +12,20 @@ export const STATUS_MAP = {
 };
 
 export const STATUS_BG = {
-    'ABIERTO':        'rgba(170,34,20,0.85)',
-    'EN REPARACIÓN':  'rgba(176,86,14,0.85)',
-    'RESUELTO':       'rgba(42,96,42,0.85)',
+    'ABIERTO':        '#FF3D00',
+    'EN REPARACIÓN':  '#FF7A00',
+    'RESUELTO':       '#00867D',
+};
+
+export const STATUS_TEXT = {
+    'ABIERTO': '#05110F', 'EN REPARACIÓN': '#05110F', 'RESUELTO': '#FFFFFF',
 };
 
 // value/label/color options for ReportDetail's status-picker buttons.
 export const STATUS_OPTIONS = [
-    { value: 'open',        label: 'ABIERTO',       color: '#AA2214' },
-    { value: 'in_progress', label: 'EN REPARACIÓN', color: '#B05610' },
-    { value: 'resolved',    label: 'RESUELTO',      color: '#2A602A' },
+    { value: 'open',        label: 'ABIERTO',       color: '#05110F' },
+    { value: 'in_progress', label: 'EN REPARACIÓN', color: '#05110F' },
+    { value: 'resolved',    label: 'RESUELTO',      color: '#FFF' },
 ];
 
 export function translateStatus(status) {

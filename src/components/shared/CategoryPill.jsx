@@ -8,7 +8,7 @@ function CategoryPill({ catData, subcategory, showLabel = false }) {
     const Icon = catData.icon;
     return (
         <div className={`cat-pill${showLabel ? ' cat-pill-labeled' : ''}`}>
-            <span className="cat-pill-left" style={{ background: catData.color }}>
+            <span className="cat-pill-left" style={{ background: catData.color, color: catData.ink }}>
                 <span className="cat-pill-icon">{Icon && <Icon />}</span>
                 {showLabel && <span className="cat-pill-label">{catData.label.toUpperCase()}</span>}
             </span>

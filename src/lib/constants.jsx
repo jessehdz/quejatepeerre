@@ -7,7 +7,8 @@ export const CATEGORIES_6 = [
         key: 'infrastructure',
         label: 'Infraestructura',
         icon: FaRoad,
-        color: '#C23A22',
+        color: '#FF7A00',
+        ink: '#05110F',
         subcategories: [
             'Hoyos', 'Semáforos', 'Derrumbes', 'Alumbrado público',
             'Apagón', 'Postes / Cables', 'Sin agua', 'Baja presión', 'Inundaciones',
@@ -17,14 +18,16 @@ export const CATEGORIES_6 = [
         key: 'security',
         label: 'Seguridad',
         icon: FaShieldAlt,
-        color: '#8B1C1C',
+        color: '#FF3D00',
+        ink: '#05110F',
         subcategories: ['Poca vigilancia', 'Áreas peligrosas', 'Alumbrado peligroso'],
     },
     {
         key: 'environment',
         label: 'Ambiente',
         icon: FaLeaf,
-        color: '#2A6B36',
+        color: '#00867D',
+        ink: '#FFF',
         subcategories: [
             'Basura acumulada', 'Recogido atrasado', 'Vertederos ilegales',
             'Contaminación', 'Playas / Ríos sucios', 'Árboles peligrosos',
@@ -35,7 +38,8 @@ export const CATEGORIES_6 = [
         key: 'community',
         label: 'Comunidad',
         icon: FaHome,
-        color: '#A0622A',
+        color: '#D2D1C7',
+        ink: '#05110F',
         subcategories: [
             'Casas abandonadas', 'Falta de mantenimiento', 'Instalaciones deportivas', 'Parques',
         ],
@@ -44,7 +48,8 @@ export const CATEGORIES_6 = [
         key: 'services',
         label: 'Servicios',
         icon: FaBusAlt,
-        color: '#1D5C9E',
+        color: '#04233A',
+        ink: '#EFEDE3',
         subcategories: [
             'Tapones', 'Transporte público', 'Médicos - Mal trato',
             'Escuelas — Condiciones', 'Escuelas — Maestros', 'Escuelas — Seguridad',
@@ -54,7 +59,8 @@ export const CATEGORIES_6 = [
         key: 'other',
         label: 'Otro',
         icon: FaEllipsisH,
-        color: '#4A4A4A',
+        color: '#1D4B47',
+        ink: '#EFEDE3',
         subcategories: ['Problema no listado'],
     },
 ];
@@ -67,14 +73,14 @@ export const CATEGORIES = CATEGORIES_6;
 // These get joined into the auto-generated description.
 // Shared across all categories — they are all factual observations, no opinions.
 export const CONTEXT_CHIPS = [
-    { key: 'days_weeks',    label: 'Lleva semanas así',        text: 'Lleva semanas sin ser atendido.' },
-    { key: 'days_years',    label: 'Lleva años así',           text: 'Lleva años sin ser atendido.' },
-    { key: 'danger',        label: 'No se puede usar',         text: 'Muy peligroso para su uso.' },
-    { key: 'danger_peds',   label: 'Peligro para peatones',    text: 'Representa un peligro para peatones.' },
-    { key: 'danger_cars',   label: 'Peligro para vehículos',   text: 'Representa un peligro para vehículos.' },
-    { key: 'danger_kids',   label: 'Peligro para menores',     text: 'Representa un peligro para menores.' },
-    { key: 'blocks_road',   label: 'Bloquea el paso',          text: 'Está bloqueando el paso.' },
-    { key: 'affects_many',  label: 'Afecta a muchos vecinos',  text: 'Afecta a múltiples vecinos del área.' },
+    { key: 'days_weeks', label: 'Lleva semanas así', text: 'Lleva semanas sin ser atendido.' },
+    { key: 'days_years', label: 'Lleva años así', text: 'Lleva años sin ser atendido.' },
+    { key: 'danger', label: 'No se puede usar', text: 'Muy peligroso para su uso.' },
+    { key: 'danger_peds', label: 'Peligro para peatones', text: 'Representa un peligro para peatones.' },
+    { key: 'danger_cars', label: 'Peligro para vehículos', text: 'Representa un peligro para vehículos.' },
+    { key: 'danger_kids', label: 'Peligro para menores', text: 'Representa un peligro para menores.' },
+    { key: 'blocks_road', label: 'Bloquea el paso', text: 'Está bloqueando el paso.' },
+    { key: 'affects_many', label: 'Afecta a muchos vecinos', text: 'Afecta a múltiples vecinos del área.' },
 ];
 
 // ── AUTO-TITLE GENERATOR ───────────────────────────────────────────────────────
