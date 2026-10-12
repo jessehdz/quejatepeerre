@@ -26,7 +26,6 @@ function BottomNav({ activeTab, onTabChange }) {
                 <div>
                     <button className="nav-fab" onClick={() => onTabChange('report')}>
                     <span className="nav-icon"><Megaphone /></span>
-                    <span className="nav-label nav-fab-label">REPORTAR</span>
                     </button>
                 </div>
                 
