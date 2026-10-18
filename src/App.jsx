@@ -11,6 +11,7 @@ import ReportDetail from './components/ReportDetail';
 import Onboarding, { hasSeenOnboarding, markOnboardingSeen } from './components/Onboarding';
 import GpsPrimer from './components/GpsPrimer';
 import GpsBlocked from './components/GpsBlocked';
+import Pueblos from './components/Pueblos';
 import Faq from './components/Faq';
 import CloseButton from './components/shared/CloseButton';
 import './App.css';
@@ -166,10 +167,7 @@ function App() {
   const otherTabContent = (
     <>
       {activeTab === 'datos' && (
-        <div className="placeholder-panel">
-          <h2>Dashboard de Municipios</h2>
-          <p>Próximamente.</p>
-        </div>
+        <Pueblos reports={reports} />
       )}
       {activeTab === 'más' && <Faq />}
     </>

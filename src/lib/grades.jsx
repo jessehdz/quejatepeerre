@@ -14,11 +14,11 @@ export function getSeverity(createdAt) {
 
 export function getGradeColor(grade) {
     const colors = {
-        'A': '#4CAF7D',
-        'B': '#F2C94C',
-        'C': '#F2994A',
-        'D': '#EB5757',
-        'F': '#B00020',
+        'A': '#00867D',
+        'B': '#D2D1C7',
+        'C': '#FF7A00',
+        'D': '#FF4D00',
+        'F': '#FF1900',
     };
     return colors[grade] || '#6A8A8E';
 }
@@ -27,8 +27,9 @@ export function calculateGrade(reports) {
     if (!reports || reports.length === 0) return { grade: 'N/A', score: 0 };
 
     const totalReports = reports.length;
-    const resolvedReports = reports.filter(r => r.status === 'RESUELTO').length;
-    const openReports = reports.filter(r => r.status === 'EN REPARACIÓN' || r.status === 'ABIERTO').length;
+    const isDone = r => r.status === 'RESUELTO' || r.status === 'resolved';
+    const resolvedReports = reports.filter(isDone).length;
+    const openReports = reports.filter(r => !isDone(r));
 
     const resolutionRate = (resolvedReports / totalReports) * 100;
     const avgDaysOpen = openReports.length > 0 ? openReports.reduce((sum, r) => sum + getDaysOpen(r.created_at), 0) / openReports.length : 0;

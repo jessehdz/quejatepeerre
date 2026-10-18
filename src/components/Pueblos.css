@@ -1,0 +1,71 @@
+.pueblos {
+    padding: 16px 20px 110px;
+}
+
+.pueblos-frame {
+    font-family: var(--font_main);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    color: var(--muted);
+}
+
+.pueblos-title { 
+    font-family: var(--font_display); 
+    font-weight: 500; 
+    font-size: 46px; 
+    line-height: 1; 
+    margin: 14px 0 20px; 
+}
+
+.pueblos-list { 
+    list-style: none; 
+}
+
+.pueblos-row { 
+    display: flex; 
+    gap: 14px; 
+    align-items: center; 
+    padding: 12px 0; 
+    border-top: 1px solid var(--border); 
+}
+
+.pueblos-grade { 
+    width: 50px; 
+    height: 50px; 
+    border-radius: 6px; 
+    display: grid; 
+    place-items: center;
+    font-family: var(--font_nums); 
+    font-weight: 600; 
+    font-size: 32px; 
+    color: var(--ink-black); 
+}
+
+.pueblos-info { 
+    flex: 1; 
+}
+
+.pueblos-name { 
+    font-family: var(--font_display); 
+    font-weight: 600; 
+    font-size: 22px; 
+}
+
+.pueblos-bar { 
+    height: 3px; 
+    background: var(--border); 
+    margin: 7px 0 5px; 
+}
+
+.pueblos-bar span { 
+    display: block; 
+    height: 100%; 
+}
+
+.pueblos-meta { 
+    font-family: var(--font_main); 
+    font-size: 10.5px; 
+    letter-spacing: .08em; 
+    color: var(--muted); 
+    text-transform: uppercase; 
+}
