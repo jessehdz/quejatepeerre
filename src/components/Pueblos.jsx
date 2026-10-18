@@ -22,7 +22,9 @@ function Pueblos({ reports }) {
                         <div className="pueblos-info">
                             <div className="pueblos-name">{r.name}</div>
                             <div className="pueblos-bar"><span style={{ width: `${r.score}%`, background: getGradeColor(r.grade) }} /></div>
-                            <div className="pueblos-meta">{r.count} reportes • puntaje {r.score}</div>
+                            <div className="pueblos-meta">
+                                {r.count >= 1 ? `${r.count} reporte${r.count > 1 ? 's' : ''} • puntaje ${r.score}` : `0 reportes • puntaje 0`}
+                            </div>
                         </div>
                     </li>
                 ))}
